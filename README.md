@@ -1,0 +1,31 @@
+# Pxl Opis
+
+A project-management app where you walk around a retro pixel office and talk to coworkers to see their tasks.
+
+## Run it
+
+```bash
+npm install     # first time only
+npm run dev     # then open http://localhost:3000
+```
+
+Production build: `npm run build && npm start`.
+
+## How it's organised
+
+| Path | What it is |
+| --- | --- |
+| `lib/data.ts` | Static demo data (coworkers, tasks, projects) and types |
+| `lib/store.ts` | Zustand store: tasks + UI state, shared by React and the game |
+| `lib/game/engine.ts` | Canvas game loop: movement, pathfinding, NPCs, drawing |
+| `lib/game/map.ts` | Office layout (text grid) and tile art |
+| `lib/game/sprites.ts` | Pixel characters drawn in code |
+| `components/` | React UI: dialog box, board, desk panel, team list, HUD, start screen |
+
+The game never renders through React. `GameCanvas` mounts the engine once,
+the engine reads and writes the store, and React components re-render from the
+store. React components move the player through `engineRef.current.walkToPerson(id)`.
+
+Tasks live in memory only, so a reload resets them. To add a backend, replace
+`INITIAL_TASKS` and the `updateTask` / `addTask` actions in `lib/store.ts` with
+API calls.
