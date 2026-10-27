@@ -2,7 +2,7 @@
 // the canvas engine reads it with `useOffice.getState()`.
 
 import { create } from 'zustand';
-import { COWORKERS, DEFAULT_LOOK, INITIAL_TASKS, type Look, type Person, type Task } from './data';
+import { COWORKERS, DEFAULT_LOOK, FOODS, INITIAL_TASKS, type FoodId, type Look, type Person, type Task } from './data';
 import { nextTaskId } from './tasks';
 
 export type Mode = 'start' | 'play' | 'dialog' | 'modal';
@@ -15,7 +15,11 @@ export interface DialogRequest {
   onClose?: () => void;
 }
 
-export type ModalRequest = { kind: 'board' } | { kind: 'status' } | { kind: 'person'; id: string };
+export type ModalRequest = { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'person'; id: string };
+
+type FoodCounts = Record<FoodId, number>;
+const foodCounts = (count: (id: FoodId) => number) =>
+  Object.fromEntries(FOODS.map(f => [f.id, count(f.id)])) as FoodCounts;
 
 interface OfficeState {
   started: boolean;
@@ -27,9 +31,14 @@ interface OfficeState {
   zone: string | null;
   zoneTick: number;
   waterCups: number;
+  fridge: FoodCounts; // what's left in the fridge
+  bag: FoodCounts; // what the player has taken
 
   start: (name: string, look: Look) => void;
   drinkWater: () => number;
+  takeFood: (id: FoodId) => void;
+  putBackFood: (id: FoodId) => void;
+  eatFood: (id: FoodId) => void;
   openDialog: (d: DialogRequest) => void;
   closeDialog: () => void;
   openModal: (m: ModalRequest) => void;
@@ -52,6 +61,8 @@ export const useOffice = create<OfficeState>()((set, get) => ({
   zone: null,
   zoneTick: 0,
   waterCups: 0,
+  fridge: foodCounts(id => FOODS.find(f => f.id === id)!.stock),
+  bag: foodCounts(() => 0),
 
   start: (name, look) => set({ started: true, player: { name, look } }),
   drinkWater: () => {
@@ -59,6 +70,13 @@ export const useOffice = create<OfficeState>()((set, get) => ({
     set({ waterCups: cups });
     return cups;
   },
+  takeFood: id => set(s => s.fridge[id] > 0
+    ? { fridge: { ...s.fridge, [id]: s.fridge[id] - 1 }, bag: { ...s.bag, [id]: s.bag[id] + 1 } }
+    : s),
+  putBackFood: id => set(s => s.bag[id] > 0
+    ? { fridge: { ...s.fridge, [id]: s.fridge[id] + 1 }, bag: { ...s.bag, [id]: s.bag[id] - 1 } }
+    : s),
+  eatFood: id => set(s => s.bag[id] > 0 ? { bag: { ...s.bag, [id]: s.bag[id] - 1 } } : s),
   openDialog: d => set({ dialog: { ...d, id: ++dialogSeq } }),
   closeDialog: () => {
     const d = get().dialog;

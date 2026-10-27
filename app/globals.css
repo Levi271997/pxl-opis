@@ -446,6 +446,44 @@ kbd {
 .status-counts b { color: var(--ink); font-weight: normal; font-family: var(--pixel); font-size: 9px; }
 .status-actions { display: flex; gap: 6px; margin-top: auto; }
 
+/* fridge */
+.fridge-note {
+  margin: 0 0 12px;
+  font-family: var(--pixel);
+  font-size: 10px;
+  line-height: 1.8;
+}
+.fridge-shelves {
+  display: grid;
+  gap: 8px;
+  background: #e8f3f8;
+  border: 3px solid var(--ink);
+  box-shadow: inset 0 0 0 3px #fff;
+  padding: 10px;
+}
+.food {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-bottom-width: 4px;
+  padding: 6px 8px;
+}
+.food.empty { opacity: .5; }
+.food-icon { width: 36px; height: 36px; image-rendering: pixelated; flex: none; }
+.food-icon.small { width: 24px; height: 24px; }
+.food-info { flex: 1; min-width: 0; display: grid; line-height: 1.05; }
+.food-info strong { font-weight: normal; font-size: 21px; }
+.food-info span { font-size: 16px; color: #6b6585; }
+.food-qty { font-family: var(--pixel); font-size: 9px; }
+.mini-btn:disabled { opacity: .5; cursor: not-allowed; }
+.mini-btn:disabled:hover { background: #fff; color: inherit; }
+.bag { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.bag li { display: flex; align-items: center; gap: 8px; font-size: 19px; }
+.bag li span { flex: 1; }
+.fridge-tip { margin: 14px 0 0; color: #6b6585; font-size: 18px; }
+
 /* ---------- start screen ---------- */
 
 #start {

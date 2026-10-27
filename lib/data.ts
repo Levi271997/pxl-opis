@@ -162,6 +162,27 @@ export const INITIAL_TASKS: Task[] = [
 
 export const WATER_GOAL = 8; // cups a day
 
+export type FoodId = 'noodles' | 'meat' | 'fish' | 'eggs' | 'milk' | 'lunchbox';
+
+export interface Food {
+  id: FoodId;
+  name: string;
+  note: string;
+  stock: number; // how many are in the fridge at the start
+  locked?: string; // set if you can't take it; this is the reason shown
+  eatLine: string;
+}
+
+// Shared by every fridge in the office.
+export const FOODS: Food[] = [
+  { id: 'noodles', name: 'Cup noodles', note: 'Spicy chicken flavour', stock: 6, eatLine: 'You add hot water and wait 3 minutes. Slurp! Delicious.' },
+  { id: 'meat', name: 'Beef steak', note: 'Marinated, ready to grill', stock: 3, eatLine: 'You grill the steak in the kitchen. Medium rare, perfect!' },
+  { id: 'fish', name: 'Fresh fish', note: 'Caught this morning', stock: 2, eatLine: 'You pan-fry the fish with a squeeze of lemon. So good.' },
+  { id: 'eggs', name: 'Eggs', note: 'Free range', stock: 10, eatLine: 'You whip up a quick omelette. Protein!' },
+  { id: 'milk', name: 'Milk', note: 'Best before Friday', stock: 2, eatLine: 'You drink a glass of cold milk. Refreshing.' },
+  { id: 'lunchbox', name: "Tom's lunchbox", note: 'Labeled "TOM - DO NOT EAT"', stock: 1, locked: 'It says TOM - DO NOT EAT. Better leave it.', eatLine: '' },
+];
+
 export const ANNOUNCEMENTS = [
   'Sprint 14 review is Thursday at 2 PM in the Meeting Room.',
   'Q4 Launch is three weeks out. Check the board in the Meeting Room!',

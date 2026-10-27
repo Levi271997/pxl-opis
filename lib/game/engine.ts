@@ -2,10 +2,10 @@
 // coworkers, interactions and rendering. It talks to React only through the
 // zustand store (reads state, calls actions like openDialog / openModal).
 
-import { ANNOUNCEMENTS, COWORKERS, PLAYER_START, PRESENCE, WATER_GOAL, type Dir, type Presence } from '../data';
+import { ANNOUNCEMENTS, COWORKERS, FOODS, PLAYER_START, PRESENCE, WATER_GOAL, type Dir, type Presence } from '../data';
 import { getMode, getPerson, useOffice } from '../store';
 import { firstName } from '../tasks';
-import { MAP_H, MAP_W, TILE, isSolid, rect, renderMap, tileAt, zoneAt } from './map';
+import { MAP_H, MAP_W, TILE, isSolid, paintOpenFridge, rect, renderMap, tileAt, zoneAt } from './map';
 import { spritesFor, type Sprites } from './sprites';
 
 const WALK_SPEED = 5; // tiles per second
@@ -18,7 +18,7 @@ const KEY_DIRS: Record<string, Dir> = {
   arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
 };
 // Objects that get an "E" prompt when you face them.
-const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team', C: 'Drink' };
+const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team', C: 'Drink', f: 'Open' };
 const DRINK_TIME = 1.6; // seconds the drinking animation lasts
 // Pixel water drop shown above your head while drinking (k outline, b blue, w shine).
 const DROP = ['...k...', '..kbk..', '.kbbbk.', 'kbwbbbk', 'kbwbbbk', 'kbbbbbk', '.kbbbk.', '..kkk..'];
@@ -101,6 +101,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   let zone: string | null = null;
   let marker: { x: number; y: number; t: number; ok: boolean } | null = null;
   let drinkTimer = 0; // > 0 while the player is drinking
+  let openFridge: { x: number; y: number } | null = null; // fridge whose door is open
   const cam = { x: 0, y: 0, ox: 0, oy: 0 };
 
   const player: Player = {
@@ -114,16 +115,17 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   const npcById = (id: string) => npcs.find(n => n.id === id);
 
   const say = (pages: string[], speaker?: string) => ui().openDialog({ pages, speaker });
-  const INTERACT: Record<string, () => void> = {
+  // Each handler gets the tile it was used on.
+  const INTERACT: Record<string, (x: number, y: number) => void> = {
     W: () => ui().openModal({ kind: 'board' }),
     U: () => ui().openModal({ kind: 'status' }),
     C: () => startDrinking(),
-    g: () => say(['Lunch is served 12:00 to 1:00. Today: pasta and a big salad.'], 'DINING TABLE'),
+    g: () => eatAtTable(),
     h: () => say(['A dining chair. Lunch break is the best meeting of the day.']),
     N: () => say(ANNOUNCEMENTS, 'NOTICE BOARD'),
     K: () => say(['*brrrzzzt*', 'You brew a fresh cup of coffee. Focus +10!'], 'COFFEE'),
     b: () => say(['The team wiki: Design System, API Docs, Brand Guide, Onboarding.', 'One day these will be real links.'], 'BOOKSHELF'),
-    f: () => say(['A lunchbox labeled "TOM - DO NOT EAT". Respect.'], 'FRIDGE'),
+    f: (x, y) => { openFridge = { x, y }; ui().openModal({ kind: 'fridge' }); },
     t: () => say(['Next meeting here: Sprint 14 Review, Thursday 2:00 PM.'], 'MEETING TABLE'),
     s: () => say(['You sit for a moment. Ahh. Back to work!']),
     p: () => say(['A very healthy office plant. Someone is watering it.']),
@@ -242,13 +244,38 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
       else if (g.tries < 3) walkToPerson(n.id, g.tries + 1); // they wandered off
     } else {
       player.dir = dirBetween(player, g);
-      INTERACT[tileAt(g.x, g.y)]?.();
+      INTERACT[tileAt(g.x, g.y)]?.(g.x, g.y);
     }
   }
 
   function checkZone() {
     const z = zoneAt(player.x, player.y);
     if (z && z !== zone) { zone = z; ui().setZone(z); }
+  }
+
+  // ---------- food ----------
+
+  function eatAtTable() {
+    const { bag } = ui();
+    const packed = FOODS.filter(f => bag[f.id] > 0);
+    if (!packed.length) {
+      say([
+        'Lunch is served 12:00 to 1:00. Today: pasta and a big salad.',
+        'Tip: grab something from a fridge, then come back here to eat it.',
+      ], 'DINING TABLE');
+      return;
+    }
+    ui().openDialog({
+      pages: ['Lunch time! What do you want to eat?'],
+      speaker: 'DINING TABLE',
+      choices: [...packed.map(f => f.name), 'Not now'],
+      onChoice: choice => {
+        const food = packed.find(f => f.name === choice);
+        if (!food) return;
+        ui().eatFood(food.id);
+        say([food.eatLine], 'YUM');
+      },
+    });
   }
 
   // ---------- drinking water ----------
@@ -309,7 +336,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     if ('npc' in f) {
       if (f.turn) player.dir = f.turn;
       talkTo(f.npc);
-    } else INTERACT[f.tile]();
+    } else INTERACT[f.tile](f.x, f.y);
   }
 
   function talkTo(npc: Npc) {
@@ -483,6 +510,12 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
 
     ctx.setTransform(S, 0, 0, S, cam.ox, cam.oy);
     ctx.drawImage(mapImage, 0, 0);
+    if (openFridge) {
+      ctx.save();
+      ctx.translate(openFridge.x * TILE, openFridge.y * TILE);
+      paintOpenFridge(ctx);
+      ctx.restore();
+    }
     drawMarker();
     for (const e of [player, ...npcs].sort((a, b) => a.py - b.py)) drawEntity(e);
     if (drinkTimer > 0) drawCup();
@@ -572,6 +605,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     if (s.player.look !== prev.player.look) player.sprites = spritesFor(s.player.look);
     if (s.started && !prev.started) checkZone();
     if (getMode(s) !== 'play' && getMode(prev) === 'play') { dirs = []; cancelPath(); }
+    if (s.modal?.kind !== 'fridge') openFridge = null; // door shuts when you close the panel
   });
 
   // ---------- loop ----------

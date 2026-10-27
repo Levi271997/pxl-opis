@@ -10,7 +10,7 @@ export const TILE = 16;
 //          o dining floor   g dining table   h chair
 const MAP_ROWS = [
   '#####################################################',
-  '#,,W,,,,,,,,,#kkKkk__f__C_#poooooooooCp#bb.....pp...#',
+  '#,,W,,,,,,,,,#kkKkk__f__C_#pooofoooooCp#bb.....pp...#',
   '#,,,,,,,,,,,,#____________#ohhhoooohhho#............#',
   '#,,tttttttt,,#__ss____ss__#ogggoooogggo#...dd.......#',
   '#,,tttttttt,,#____________oohhhoooohhho#...........p#',
@@ -306,6 +306,26 @@ const PAINTERS: Record<string, (g: G, x: number, y: number) => void> = {
     });
   },
 };
+
+// Fridge with its door swung open, drawn over a fridge tile while you browse it.
+export function paintOpenFridge(g: G) {
+  rect(g, '#9fb0bc', 1, 0, 12, 16);
+  rect(g, '#fdf9d8', 2, 1, 10, 13);
+  rect(g, '#c9d3db', 2, 5, 10, 1);
+  rect(g, '#c9d3db', 2, 9, 10, 1);
+  rect(g, '#d64545', 3, 2, 2, 3); // noodles
+  rect(g, '#f2c94c', 6, 3, 2, 2);
+  rect(g, '#f7b2b2', 9, 3, 2, 2);
+  rect(g, '#d64545', 3, 7, 3, 2); // meat
+  rect(g, '#8cc4e8', 7, 7, 4, 2); // fish
+  rect(g, '#5b8def', 3, 10, 2, 4); // milk
+  rect(g, '#ffffff', 7, 11, 2, 2); // eggs
+  rect(g, '#f2a33a', 10, 11, 2, 2);
+  // the open door on the right
+  rect(g, '#9fb0bc', 13, 0, 3, 16);
+  rect(g, '#e8eef2', 13, 1, 2, 14);
+  rect(g, '#8fa0ab', 14, 6, 1, 3);
+}
 
 // Paint the whole office once into an offscreen canvas.
 export function renderMap() {
