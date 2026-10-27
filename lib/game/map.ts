@@ -6,7 +6,7 @@ export const TILE = 16;
 // Legend:  # wall   . wood floor   , carpet   _ kitchen tile   r rug
 //          d desk   p plant   b bookshelf   W whiteboard (opens the board)
 //          t meeting table   k counter   K coffee machine   f fridge
-//          s sofa   N notice board
+//          s sofa   N notice board   U team status board
 const MAP_ROWS = [
   '########################################',
   '#,,W,,,,,,,,,#kkKkk__f____#bb.....pp...#',
@@ -17,7 +17,7 @@ const MAP_ROWS = [
   '#p,,,,,,,,,,p#____________#p...........#',
   '#,,,,,,,,,,,,#__p_________#............#',
   '######..##########....##########..######',
-  '#p........N...........................p#',
+  '#p........N.............U.............p#',
   '#......................................#',
   '#..dddd...dddd...rrrrrrr...dddd...dddd.#',
   '#................rrrrrrr...............#',
@@ -32,7 +32,7 @@ const MAP_ROWS = [
 ];
 export const MAP_W = MAP_ROWS[0].length;
 export const MAP_H = MAP_ROWS.length;
-const SOLID = new Set('#dpbWtkKfsN');
+const SOLID = new Set('#dpbWtkKfsNU');
 const FLOORS = '.,_r';
 
 const ZONES = [
@@ -241,6 +241,21 @@ const PAINTERS: Record<string, (g: G, x: number, y: number) => void> = {
     rect(g, '#d64545', 3, 3, 1, 1);
     rect(g, '#d64545', 8, 3, 1, 1);
     rect(g, '#d64545', 10, 7, 1, 1);
+  },
+  // Team status board: a grid of little faces, each with a status light.
+  U(g) {
+    rect(g, '#5b3a1f', 3, 12, 1, 4);
+    rect(g, '#5b3a1f', 12, 12, 1, 4);
+    rect(g, '#2b2840', 0, 0, 16, 13);
+    rect(g, '#3a3450', 1, 1, 14, 11);
+    rect(g, '#ffd84d', 1, 1, 14, 2);
+    const lights = ['#4ade80', '#4ade80', '#f87171', '#4ade80', '#facc15', '#4ade80'];
+    lights.forEach((light, i) => {
+      const x = 2 + (i % 3) * 4, y = 4 + Math.floor(i / 3) * 4;
+      rect(g, '#e8b58a', x, y, 2, 2);
+      rect(g, '#5a3825', x, y, 2, 1);
+      rect(g, light, x + 2, y + 2, 1, 1);
+    });
   },
 };
 

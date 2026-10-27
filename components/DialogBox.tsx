@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useOffice, type DialogRequest } from '@/lib/store';
 
+const MOVE_KEYS = new Set(['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd']);
+
 export default function DialogBox() {
   const dialog = useOffice(s => s.dialog);
   if (!dialog) return null;
@@ -47,6 +49,8 @@ function DialogView({ dialog }: { dialog: DialogRequest }) {
       const n = choices?.length ?? 0;
       if (choices && (k === 'arrowup' || k === 'w')) setChoice(c => (c - 1 + n) % n);
       else if (choices && (k === 'arrowdown' || k === 's')) setChoice(c => (c + 1) % n);
+      // Plain messages (no reply to pick) get out of the way as soon as you walk.
+      else if (!dialog.choices && MOVE_KEYS.has(k)) { closeDialog(); return; }
       else if (k === 'e' || k === ' ' || k === 'enter' || k === 'z') advance();
       else if (k === 'escape' || k === 'x') closeDialog();
       else return;

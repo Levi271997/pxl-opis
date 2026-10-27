@@ -18,7 +18,7 @@ const KEY_DIRS: Record<string, Dir> = {
   arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
 };
 // Objects that get an "E" prompt when you face them.
-const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee' };
+const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team' };
 
 interface Entity {
   x: number; y: number; px: number; py: number;
@@ -111,6 +111,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   const say = (pages: string[], speaker?: string) => ui().openDialog({ pages, speaker });
   const INTERACT: Record<string, () => void> = {
     W: () => ui().openModal({ kind: 'board' }),
+    U: () => ui().openModal({ kind: 'status' }),
     N: () => say(ANNOUNCEMENTS, 'NOTICE BOARD'),
     K: () => say(['*brrrzzzt*', 'You brew a fresh cup of coffee. Focus +10!'], 'COFFEE'),
     b: () => say(['The team wiki: Design System, API Docs, Brand Guide, Onboarding.', 'One day these will be real links.'], 'BOOKSHELF'),
@@ -459,14 +460,13 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
       return;
     }
     running = e.shiftKey;
-    if (mode() !== 'play') return; // dialog + modal components handle their own keys
     const k = e.key.toLowerCase();
     const dir = KEY_DIRS[k];
-    if (dir) {
-      if (!dirs.includes(dir)) dirs.push(dir);
-      e.preventDefault();
-      return;
-    }
+    // Track held directions in every mode, so a key that dismisses a dialog
+    // starts walking straight away. planStep only moves while playing.
+    if (dir && !dirs.includes(dir)) dirs.push(dir);
+    if (mode() !== 'play') return; // dialog + modal components handle their own keys
+    if (dir) { e.preventDefault(); return; }
     if (e.repeat) return;
     if (k === 'e' || k === ' ' || k === 'enter') { interact(); e.preventDefault(); }
     else if (k === 'b') ui().openModal({ kind: 'board' });

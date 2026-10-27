@@ -5,6 +5,7 @@ import { getPerson, useOffice } from '@/lib/store';
 import { firstName } from '@/lib/tasks';
 import Board from './Board';
 import PersonPanel from './PersonPanel';
+import StatusBoard from './StatusBoard';
 
 export default function ModalHost() {
   const modal = useOffice(s => s.modal);
@@ -24,14 +25,14 @@ export default function ModalHost() {
 
   if (!modal) return null;
 
-  const heading = modal.kind === 'board'
-    ? 'Project board'
+  const heading = modal.kind === 'board' ? 'Project board'
+    : modal.kind === 'status' ? 'Team status'
     : modal.id === 'me' ? 'My tasks' : `${firstName(getPerson(modal.id, playerName).name)}'s desk`;
 
   return (
     <div
       id="modal-root"
-      className={modal.kind === 'board' ? 'wide' : undefined}
+      className={modal.kind !== 'person' ? 'wide' : undefined}
       onPointerDown={e => { if (e.target === e.currentTarget) closeModal(); }}
     >
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -40,7 +41,9 @@ export default function ModalHost() {
           <button className="icon-btn" aria-label="Close" onClick={closeModal}>×</button>
         </div>
         <div id="modal-body">
-          {modal.kind === 'board' ? <Board /> : <PersonPanel id={modal.id} />}
+          {modal.kind === 'board' && <Board />}
+          {modal.kind === 'status' && <StatusBoard />}
+          {modal.kind === 'person' && <PersonPanel id={modal.id} />}
         </div>
       </div>
     </div>

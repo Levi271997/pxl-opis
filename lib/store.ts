@@ -15,7 +15,7 @@ export interface DialogRequest {
   onClose?: () => void;
 }
 
-export type ModalRequest = { kind: 'board' } | { kind: 'person'; id: string };
+export type ModalRequest = { kind: 'board' } | { kind: 'status' } | { kind: 'person'; id: string };
 
 interface OfficeState {
   started: boolean;
