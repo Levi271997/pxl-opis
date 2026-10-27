@@ -1,5 +1,6 @@
 'use client';
 
+import { WATER_GOAL } from '@/lib/data';
 import { HELP_PAGES } from '@/lib/game/engine';
 import { getMode, useOffice } from '@/lib/store';
 import Portrait from './Portrait';
@@ -7,6 +8,7 @@ import Portrait from './Portrait';
 export default function Hud() {
   const name = useOffice(s => s.player.name);
   const zone = useOffice(s => s.zone);
+  const cups = useOffice(s => s.waterCups);
   const { openModal, openDialog, toggleTeam } = useOffice.getState();
   // HUD buttons only work while walking around, not mid-conversation.
   const whenPlaying = (fn: () => void) => () => {
@@ -20,6 +22,13 @@ export default function Hud() {
         <div>
           <div id="me-name">{name}</div>
           <div id="zone-name">{zone ?? 'Open Office'}</div>
+        </div>
+        <div
+          className={`water${cups >= WATER_GOAL ? ' full' : ''}`}
+          title="Cups of water today. Visit a water cooler to drink."
+        >
+          <i className="drop" aria-hidden />
+          {cups}/{WATER_GOAL}
         </div>
       </div>
       <nav className="hud-actions">

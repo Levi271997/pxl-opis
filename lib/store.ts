@@ -26,8 +26,10 @@ interface OfficeState {
   teamOpen: boolean;
   zone: string | null;
   zoneTick: number;
+  waterCups: number;
 
   start: (name: string, look: Look) => void;
+  drinkWater: () => number;
   openDialog: (d: DialogRequest) => void;
   closeDialog: () => void;
   openModal: (m: ModalRequest) => void;
@@ -49,8 +51,14 @@ export const useOffice = create<OfficeState>()((set, get) => ({
   teamOpen: false,
   zone: null,
   zoneTick: 0,
+  waterCups: 0,
 
   start: (name, look) => set({ started: true, player: { name, look } }),
+  drinkWater: () => {
+    const cups = get().waterCups + 1;
+    set({ waterCups: cups });
+    return cups;
+  },
   openDialog: d => set({ dialog: { ...d, id: ++dialogSeq } }),
   closeDialog: () => {
     const d = get().dialog;

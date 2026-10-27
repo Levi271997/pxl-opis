@@ -6,40 +6,42 @@ export const TILE = 16;
 // Legend:  # wall   . wood floor   , carpet   _ kitchen tile   r rug
 //          d desk   p plant   b bookshelf   W whiteboard (opens the board)
 //          t meeting table   k counter   K coffee machine   f fridge
-//          s sofa   N notice board   U team status board
+//          s sofa   N notice board   U team status board   C water cooler
+//          o dining floor   g dining table   h chair
 const MAP_ROWS = [
-  '########################################',
-  '#,,W,,,,,,,,,#kkKkk__f____#bb.....pp...#',
-  '#,,,,,,,,,,,,#____________#............#',
-  '#,,tttttttt,,#__ss____ss__#...dd.......#',
-  '#,,tttttttt,,#____________#...........p#',
-  '#,,,,,,,,,,,,#__ss____ss__#............#',
-  '#p,,,,,,,,,,p#____________#p...........#',
-  '#,,,,,,,,,,,,#__p_________#............#',
-  '######..##########....##########..######',
-  '#p........N.............U.............p#',
-  '#......................................#',
-  '#..dddd...dddd...rrrrrrr...dddd...dddd.#',
-  '#................rrrrrrr...............#',
-  '#................rrrrrrr...............#',
-  '#......................................#',
-  '#..dddd...dddd.............dddd...dddd.#',
-  '#......................................#',
-  '#......................................#',
-  '#.ss.ss..p.....................p..bbbb.#',
-  '#......................................#',
-  '########################################',
+  '#####################################################',
+  '#,,W,,,,,,,,,#kkKkk__f__C_#poooooooooCp#bb.....pp...#',
+  '#,,,,,,,,,,,,#____________#ohhhoooohhho#............#',
+  '#,,tttttttt,,#__ss____ss__#ogggoooogggo#...dd.......#',
+  '#,,tttttttt,,#____________oohhhoooohhho#...........p#',
+  '#,,,,,,,,,,,,#__ss____ss__oohhhoooohhho#............#',
+  '#p,,,,,,,,,,p#____________#ogggoooogggo#p...........#',
+  '#,,,,,,,,,,,,#__p_________#ohhhoooohhho#............#',
+  '######..##########....##########..###########..######',
+  '#p........N.............U..................C.......p#',
+  '#...................................................#',
+  '#..dddd...dddd...rrrrrrr...dddd...dddd...dddd.......#',
+  '#................rrrrrrr............................#',
+  '#................rrrrrrr............................#',
+  '#...................................................#',
+  '#..dddd...dddd.............dddd...dddd...dddd.......#',
+  '#...................................................#',
+  '#...................................................#',
+  '#.ss.ss..p.....................p..bbbb......p..ss.ss#',
+  '#...................................................#',
+  '#####################################################',
 ];
 export const MAP_W = MAP_ROWS[0].length;
 export const MAP_H = MAP_ROWS.length;
-const SOLID = new Set('#dpbWtkKfsNU');
-const FLOORS = '.,_r';
+const SOLID = new Set('#dpbWtkKfsNUChg');
+const FLOORS = '.,_ro';
 
 const ZONES = [
   { name: 'Meeting Room', x1: 1, y1: 1, x2: 12, y2: 7 },
   { name: 'Kitchen', x1: 14, y1: 1, x2: 25, y2: 7 },
-  { name: "Omar's Office", x1: 27, y1: 1, x2: 38, y2: 7 },
-  { name: 'Open Office', x1: 1, y1: 9, x2: 38, y2: 19 },
+  { name: 'Dining Room', x1: 27, y1: 1, x2: 38, y2: 7 },
+  { name: "Omar's Office", x1: 40, y1: 1, x2: 51, y2: 7 },
+  { name: 'Open Office', x1: 1, y1: 9, x2: 51, y2: 19 },
 ];
 
 export function tileAt(x: number, y: number) {
@@ -83,6 +85,14 @@ function paintFloor(g: G, t: string, x: number, y: number) {
     for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) {
       rect(g, (x * 2 + i + y * 2 + j) % 2 ? '#dde1e6' : '#f0f2f4', i * 8, j * 8, 8, 8);
     }
+  } else if (t === 'o') {
+    // warm terracotta tiles for the dining room
+    rect(g, '#d9a273', 0, 0, 16, 16);
+    rect(g, (x + y) % 2 ? '#cf9466' : '#e0ad80', 1, 1, 6, 6);
+    rect(g, (x + y) % 2 ? '#e0ad80' : '#cf9466', 9, 9, 6, 6);
+    g.fillStyle = '#b97f55';
+    g.fillRect(0, 7, 16, 1); g.fillRect(0, 15, 16, 1);
+    g.fillRect(7, 0, 1, 16); g.fillRect(15, 0, 1, 16);
   } else if (t === 'r') {
     rect(g, '#a33f3c', 0, 0, 16, 16);
     rect(g, '#b9554c', 5, 5, 6, 6);
@@ -241,6 +251,44 @@ const PAINTERS: Record<string, (g: G, x: number, y: number) => void> = {
     rect(g, '#d64545', 3, 3, 1, 1);
     rect(g, '#d64545', 8, 3, 1, 1);
     rect(g, '#d64545', 10, 7, 1, 1);
+  },
+  // Water cooler: blue bottle on a white stand, with a cup dispenser.
+  C(g) {
+    rect(g, 'rgba(0,0,0,.2)', 3, 14, 10, 2);
+    rect(g, '#c9d3db', 4, 6, 8, 9);
+    rect(g, '#eef3f6', 5, 6, 6, 8);
+    rect(g, '#d64545', 6, 9, 1, 1);
+    rect(g, '#4f7fe0', 9, 9, 1, 1);
+    rect(g, '#8fa0ab', 5, 12, 6, 1);
+    rect(g, '#3d8fd6', 5, 0, 6, 6);
+    rect(g, '#6fc3ff', 6, 1, 4, 4);
+    rect(g, '#c4ecff', 6, 1, 1, 3);
+    rect(g, '#2b6fb0', 7, 5, 2, 1);
+    rect(g, '#f4f4f4', 12, 8, 2, 4);
+  },
+  // Dining table with a tablecloth; plates on each tile.
+  g(g, x, y) {
+    const lf = tileAt(x - 1, y) === 'g', rt = tileAt(x + 1, y) === 'g';
+    rect(g, 'rgba(0,0,0,.2)', 0, 13, 16, 3);
+    rect(g, '#7a4a28', 0, 2, 16, 11);
+    rect(g, '#f6f1e1', 0, 2, 16, 8);
+    rect(g, '#e6dcc4', 0, 9, 16, 2);
+    if (!lf) rect(g, '#7a4a28', 0, 2, 1, 11);
+    if (!rt) rect(g, '#7a4a28', 15, 2, 1, 11);
+    rect(g, '#ffffff', 5, 3, 6, 4);
+    rect(g, '#d9d4c7', 6, 4, 4, 2);
+    if (hash(x, y) % 2) rect(g, '#e0679b', 7, 4, 2, 1);
+    else rect(g, '#9be37a', 7, 4, 2, 1);
+  },
+  h(g, x, y) {
+    // the chair back faces away from the table it belongs to
+    const tableBelow = tileAt(x, y + 1) === 'g';
+    rect(g, 'rgba(0,0,0,.18)', 4, 13, 8, 2);
+    rect(g, '#8a5a33', 4, 5, 8, 7);
+    rect(g, '#a36d40', 5, 6, 6, 5);
+    rect(g, '#6b4223', 4, tableBelow ? 2 : 10, 8, 3);
+    rect(g, '#6b4223', 4, 12, 1, 2);
+    rect(g, '#6b4223', 11, 12, 1, 2);
   },
   // Team status board: a grid of little faces, each with a status light.
   U(g) {

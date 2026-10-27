@@ -2,10 +2,10 @@
 // coworkers, interactions and rendering. It talks to React only through the
 // zustand store (reads state, calls actions like openDialog / openModal).
 
-import { ANNOUNCEMENTS, COWORKERS, PLAYER_START, PRESENCE, type Dir, type Presence } from '../data';
+import { ANNOUNCEMENTS, COWORKERS, PLAYER_START, PRESENCE, WATER_GOAL, type Dir, type Presence } from '../data';
 import { getMode, getPerson, useOffice } from '../store';
 import { firstName } from '../tasks';
-import { MAP_H, MAP_W, TILE, isSolid, renderMap, tileAt, zoneAt } from './map';
+import { MAP_H, MAP_W, TILE, isSolid, rect, renderMap, tileAt, zoneAt } from './map';
 import { spritesFor, type Sprites } from './sprites';
 
 const WALK_SPEED = 5; // tiles per second
@@ -18,7 +18,11 @@ const KEY_DIRS: Record<string, Dir> = {
   arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
 };
 // Objects that get an "E" prompt when you face them.
-const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team' };
+const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team', C: 'Drink' };
+const DRINK_TIME = 1.6; // seconds the drinking animation lasts
+// Pixel water drop shown above your head while drinking (k outline, b blue, w shine).
+const DROP = ['...k...', '..kbk..', '.kbbbk.', 'kbwbbbk', 'kbwbbbk', 'kbbbbbk', '.kbbbk.', '..kkk..'];
+const DROP_COLORS: Record<string, string> = { k: '#1c1726', b: '#4fb3ff', w: '#e6f6ff' };
 
 interface Entity {
   x: number; y: number; px: number; py: number;
@@ -96,6 +100,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   let running = false;
   let zone: string | null = null;
   let marker: { x: number; y: number; t: number; ok: boolean } | null = null;
+  let drinkTimer = 0; // > 0 while the player is drinking
   const cam = { x: 0, y: 0, ox: 0, oy: 0 };
 
   const player: Player = {
@@ -112,6 +117,9 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   const INTERACT: Record<string, () => void> = {
     W: () => ui().openModal({ kind: 'board' }),
     U: () => ui().openModal({ kind: 'status' }),
+    C: () => startDrinking(),
+    g: () => say(['Lunch is served 12:00 to 1:00. Today: pasta and a big salad.'], 'DINING TABLE'),
+    h: () => say(['A dining chair. Lunch break is the best meeting of the day.']),
     N: () => say(ANNOUNCEMENTS, 'NOTICE BOARD'),
     K: () => say(['*brrrzzzt*', 'You brew a fresh cup of coffee. Focus +10!'], 'COFFEE'),
     b: () => say(['The team wiki: Design System, API Docs, Brand Guide, Onboarding.', 'One day these will be real links.'], 'BOOKSHELF'),
@@ -243,7 +251,32 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     if (z && z !== zone) { zone = z; ui().setZone(z); }
   }
 
+  // ---------- drinking water ----------
+
+  function startDrinking() {
+    if (drinkTimer > 0) return;
+    cancelPath();
+    dirs = [];
+    player.dir = 'down'; // turn around to face the room while sipping
+    drinkTimer = DRINK_TIME;
+  }
+
+  function finishDrinking() {
+    const cups = ui().drinkWater();
+    if (mode() !== 'play') return;
+    const line = cups === 1 ? 'Ahh, cold water. Your first cup today!'
+      : cups < WATER_GOAL ? `Refreshing! That's ${cups} of ${WATER_GOAL} cups today.`
+      : cups === WATER_GOAL ? `${WATER_GOAL} cups! You're fully hydrated. The plants are jealous.`
+      : `${cups} cups... maybe take a bathroom break soon.`;
+    say([line], 'WATER');
+  }
+
   function updatePlayer(dt: number) {
+    if (drinkTimer > 0) {
+      drinkTimer -= dt;
+      if (drinkTimer <= 0) finishDrinking();
+      return;
+    }
     if (!player.moving) planStep();
     if (advance(player, dt, running ? RUN_SPEED : WALK_SPEED)) {
       checkZone();
@@ -420,6 +453,28 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     ctx.fillText(label, bx + pad, by + bh / 2 + 1);
   }
 
+  // Paper cup in the right hand, lifted to the mouth for the middle of the sip.
+  function drawCup() {
+    const p = 1 - drinkTimer / DRINK_TIME;
+    const lift = p < 0.2 ? p / 0.2 : p > 0.85 ? (1 - p) / 0.15 : 1;
+    const x = Math.round(player.px) + 10;
+    const y = Math.round(player.py + 8 - lift * 5);
+    rect(ctx, '#1c1726', x - 1, y - 1, 5, 5);
+    rect(ctx, '#f4f4f4', x, y, 3, 3);
+    rect(ctx, '#4fb3ff', x, y, 3, 1);
+  }
+
+  function drawDrop(tagTop: number) {
+    const unit = Math.max(2, Math.round(S * 0.75));
+    const bob = Math.round(Math.abs(Math.sin(time * 7)) * unit * 2);
+    const [sx] = toScreen(player.px + 8, 0);
+    const x0 = Math.round(sx - (DROP[0].length * unit) / 2);
+    const y0 = Math.round(tagTop - DROP.length * unit - unit * 2 - bob);
+    DROP.forEach((row, j) => [...row].forEach((c, i) => {
+      if (DROP_COLORS[c]) rect(ctx, DROP_COLORS[c], x0 + i * unit, y0 + j * unit, unit, unit);
+    }));
+  }
+
   function render() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.imageSmoothingEnabled = false;
@@ -430,6 +485,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     ctx.drawImage(mapImage, 0, 0);
     drawMarker();
     for (const e of [player, ...npcs].sort((a, b) => a.py - b.py)) drawEntity(e);
+    if (drinkTimer > 0) drawCup();
 
     // Screen-space overlays (crisp text at any zoom)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -439,9 +495,12 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
       const person = getPerson(n.id, me.name);
       tagTop.set(n, drawNameTag(n, firstName(person.name), person.status, false));
     }
-    if (started) drawNameTag(player, me.name, 'online', true);
+    if (started) {
+      const top = drawNameTag(player, me.name, 'online', true);
+      if (drinkTimer > 0) drawDrop(top);
+    }
 
-    if (mode() === 'play') {
+    if (mode() === 'play' && drinkTimer <= 0) {
       const f = findFocus();
       if (f && 'npc' in f) drawBubble(toScreen(f.npc.px + 8, 0)[0], tagTop.get(f.npc)!, 'Talk');
       else if (f && HIGHLIGHT[f.tile]) {
@@ -467,6 +526,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     if (dir && !dirs.includes(dir)) dirs.push(dir);
     if (mode() !== 'play') return; // dialog + modal components handle their own keys
     if (dir) { e.preventDefault(); return; }
+    if (drinkTimer > 0) return; // let them finish their sip
     if (e.repeat) return;
     if (k === 'e' || k === ' ' || k === 'enter') { interact(); e.preventDefault(); }
     else if (k === 'b') ui().openModal({ kind: 'board' });
@@ -484,7 +544,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   function onBlur() { dirs = []; running = false; }
 
   function onPointerDown(e: PointerEvent) {
-    if (mode() !== 'play') return;
+    if (mode() !== 'play' || drinkTimer > 0) return;
     const r = canvas.getBoundingClientRect();
     const wx = ((e.clientX - r.left) * dpr - cam.ox) / S;
     const wy = ((e.clientY - r.top) * dpr - cam.oy) / S;

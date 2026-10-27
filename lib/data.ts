@@ -108,16 +108,16 @@ export const COWORKERS: Coworker[] = [
     blocker: 'Need final screenshots of the app for the launch emails.',
   },
   {
-    id: 'omar', name: 'Omar Haddad', role: 'Project Manager', status: 'online', x: 30, y: 2, dir: 'down',
+    id: 'omar', name: 'Omar Haddad', role: 'Project Manager', status: 'online', x: 43, y: 2, dir: 'down',
     look: { skin: '#8d5524', hair: '#1b1b1b', hairStyle: 'short', shirt: '#f4f4f4', pants: '#2b2d42' },
     greeting: ['Welcome to my office. Grab a seat.', "I keep the roadmap honest. Let's talk priorities."],
     blocker: 'Two teams want the same sprint. Classic.',
   },
   {
     id: 'tom', name: 'Tom Becker', role: 'Data Analyst', status: 'away', x: 20, y: 4, dir: 'down',
-    wander: { x1: 14, y1: 2, x2: 25, y2: 7 },
+    wander: { x1: 14, y1: 2, x2: 38, y2: 7 }, // kitchen + dining room
     look: { skin: '#f5c9a0', hair: '#6b4226', hairStyle: 'short', shirt: '#d64545', pants: '#3a3a50' },
-    greeting: ['Oh, hey! Just on a coffee break.', 'The funnel numbers look interesting, by the way.'],
+    greeting: ['Oh, hey! Just on a lunch break.', 'The funnel numbers look interesting, by the way.'],
     blocker: 'Event names are a mess. Half the dashboard is guesswork.',
   },
   {
@@ -159,6 +159,8 @@ export const INITIAL_TASKS: Task[] = [
   { id: 'T-182', title: 'Write release notes for v2 beta', project: 'app', assignee: 'me', status: 'todo', priority: 'med', dueIn: 6 },
   { id: 'T-183', title: 'Approve Q4 CI budget', project: 'q4', assignee: 'me', status: 'doing', priority: 'high', dueIn: 0 },
 ];
+
+export const WATER_GOAL = 8; // cups a day
 
 export const ANNOUNCEMENTS = [
   'Sprint 14 review is Thursday at 2 PM in the Meeting Room.',
