@@ -120,10 +120,13 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `lib/game/food.ts` | 12×12 pixel art for fridge items (one char per pixel + palette) |
 | `components/Office.tsx` | Composes the whole page |
 | `components/DialogBox.tsx` | Pokemon-style typewriter dialog with optional choices. Movement keys close dialogs that have no choices |
-| `components/ModalHost.tsx` | Renders the open modal: `board`, `status`, `fridge`, `bookshelf`, `person` |
+| `components/ModalHost.tsx` | Renders the open modal: `board`, `status`, `fridge`, `bookshelf`, `arcade`, `person` |
 | `components/Board.tsx` / `TaskCard.tsx` / `PersonPanel.tsx` | Kanban board (drag between columns, project filter), task card, a person's desk panel with add-task form |
 | `components/StatusBoard.tsx` | Team status board: everyone's presence, current task, counts |
 | `components/FridgePanel.tsx` / `FoodIcon.tsx` | Fridge contents, Take/Put back, lunch bag |
+| `components/ArcadePanel.tsx` | Arcade menu with best scores and team top 5, and the game screen (canvas 160×144 scaled up, keyboard input, pause, game over, posts the score) |
+| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
+| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migration `20261029000000_arcade_scores.sql`, must be run separately) |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
 | `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, avatar picker, room sign, sprite portrait |
@@ -138,7 +141,7 @@ at col 26, rows 4–5) and Omar's Office (40–51). The open office is rows 9–
 in row 8 are at cols 6–7, 18–21, 32–33 and 45–46.
 
 Legend: `#` wall, `.` wood, `,` carpet, `_` kitchen tile, `o` dining tile, `r` rug,
-`d` desk, `p` plant, `b` bookshelf (opens the reader), `W` whiteboard (opens the project board),
+`d` desk, `p` plant, `b` bookshelf (opens the reader), `A` arcade machine (opens the arcade), `W` whiteboard (opens the project board),
 `t` meeting table, `k` counter, `K` coffee machine, `f` fridge (opens the fridge),
 `s` sofa, `N` notice board, `U` team status board, `C` water cooler (drink),
 `g` dining table (eat), `h` chair.
@@ -171,6 +174,10 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
    RLS and a demo-workspace seeding function, setup guide. Demo mode still works.
 6. Office loaded from Supabase; task changes saved.
 7. Bookshelves (tile `b`) open a reader with 5 free classics from Project Gutenberg.
+8. Status HUD button and U shortcut for the team status board.
+9. Arcade (3 cabinets, tile `A`, below the player start): Snake, Breakout, Block Drop,
+   personal bests in localStorage, team leaderboard in Supabase. Decided against a
+   Game Boy emulator with commercial ROMs (Tetris/Mario are copyrighted).
 
 Everything else still resets on reload: tasks, water, fridge stock.
 

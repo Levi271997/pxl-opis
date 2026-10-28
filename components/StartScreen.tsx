@@ -39,14 +39,23 @@ export default function StartScreen({ account }: { account: Account | null }) {
   const enter = (e: React.FormEvent) => {
     e.preventDefault();
     const playerName = name.trim() || 'You';
-    const { start, openDialog } = useOffice.getState();
+    const { start, openDialog, workspace } = useOffice.getState();
     start(playerName, look);
     if (account) {
       // Remember the avatar for next time. Not awaited: the office opens straight away.
-      createClient()
+      const supabase = createClient();
+      supabase
         .from('profiles')
         .upsert({ id: account.id, display_name: playerName, look })
         .then(({ error }) => { if (error) console.warn('Could not save profile:', error.message); });
+      // Teammates see this name (e.g. on the arcade leaderboard).
+      if (workspace) {
+        supabase
+          .from('members')
+          .update({ display_name: playerName, look })
+          .eq('id', workspace.meId)
+          .then(({ error }) => { if (error) console.warn('Could not update your member name:', error.message); });
+      }
     }
     openDialog({
       speaker: 'TIP',

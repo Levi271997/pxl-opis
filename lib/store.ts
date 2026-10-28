@@ -20,7 +20,7 @@ export interface DialogRequest {
 }
 
 export type ModalRequest =
-  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'person'; id: string };
+  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'person'; id: string };
 
 type FoodCounts = Record<FoodId, number>;
 const foodCounts = (count: (id: FoodId) => number) =>

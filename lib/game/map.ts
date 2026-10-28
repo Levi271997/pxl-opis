@@ -7,7 +7,7 @@ export const TILE = 16;
 //          d desk   p plant   b bookshelf   W whiteboard (opens the board)
 //          t meeting table   k counter   K coffee machine   f fridge
 //          s sofa   N notice board   U team status board   C water cooler
-//          o dining floor   g dining table   h chair
+//          o dining floor   g dining table   h chair   A arcade machine
 const MAP_ROWS = [
   '#####################################################',
   '#,,W,,,,,,,,,#kkKkk__f__C_#pooofoooooCp#bb.....pp...#',
@@ -27,13 +27,13 @@ const MAP_ROWS = [
   '#..dddd...dddd.............dddd...dddd...dddd.......#',
   '#...................................................#',
   '#...................................................#',
-  '#.ss.ss..p.....................p..bbbb......p..ss.ss#',
+  '#.ss.ss..p.........AAA.........p..bbbb......p..ss.ss#',
   '#...................................................#',
   '#####################################################',
 ];
 export const MAP_W = MAP_ROWS[0].length;
 export const MAP_H = MAP_ROWS.length;
-const SOLID = new Set('#dpbWtkKfsNUChg');
+const SOLID = new Set('#dpbWtkKfsNUChgA');
 const FLOORS = '.,_ro';
 
 const ZONES = [
@@ -135,6 +135,20 @@ function paintWall(g: G, x: number, y: number) {
 }
 
 const PAINTERS: Record<string, (g: G, x: number, y: number) => void> = {
+  // Arcade cabinet, seen from the front: marquee, glowing screen, stick and buttons.
+  A(g, x) {
+    const glow = ['#5fcf5a', '#5b8def', '#f2a33a'][x % 3];
+    rect(g, 'rgba(0,0,0,.25)', 1, 14, 14, 2);
+    rect(g, '#2b2840', 1, 0, 14, 15);
+    rect(g, glow, 2, 1, 12, 2);
+    rect(g, '#1b1730', 3, 4, 10, 6);
+    rect(g, glow, 4, 5, 8, 4);
+    rect(g, 'rgba(255,255,255,.45)', 4, 5, 3, 1);
+    rect(g, '#463f5f', 2, 10, 12, 3);
+    rect(g, '#d64545', 4, 10, 1, 2);
+    rect(g, '#ffd84d', 9, 11, 1, 1);
+    rect(g, '#4fb3ff', 11, 11, 1, 1);
+  },
   d(g, x, y) {
     rect(g, 'rgba(0,0,0,.18)', 0, 14, 16, 2);
     rect(g, '#6e4322', 0, 5, 16, 9);

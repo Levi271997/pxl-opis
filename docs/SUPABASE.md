@@ -32,6 +32,9 @@ That creates the tables (profiles, workspaces, members, projects, tasks,
 integrations), the security rules, and a `create_demo_workspace()` function that
 fills a new team's office with the demo coworkers and tasks.
 
+Then do the same with `supabase/migrations/20261029000000_arcade_scores.sql`. It adds
+the arcade leaderboard; the games work without it, but scores aren't shared.
+
 (If you later install the Supabase CLI, `supabase link` and `supabase db push`
 apply the same file.)
 

@@ -527,6 +527,44 @@ kbd {
 .reader-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--pixel); font-size: 9px; }
 .reader-nav button:disabled { opacity: .4; cursor: not-allowed; }
 
+/* arcade */
+.arcade-games { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.arcade-game { background: #fff; border: 3px solid var(--ink); border-top: 8px solid var(--c); padding: 10px 12px; }
+.arcade-game header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.arcade-game strong { font-family: var(--pixel); font-size: 11px; font-weight: normal; }
+.arcade-game p { margin: 8px 0 0; font-size: 18px; line-height: 1.1; color: #6b6585; }
+.arcade-game .arcade-mybest { color: var(--ink); }
+.arcade-game h5 { margin: 12px 0 4px; font-family: var(--pixel); font-size: 8px; font-weight: normal; }
+.arcade-note { margin: 0; font-size: 17px; color: #6b6585; }
+.leaderboard { margin: 0; padding-left: 26px; font-size: 18px; }
+.leaderboard li span { display: inline-block; min-width: 70%; }
+.leaderboard li b { font-family: var(--pixel); font-size: 9px; font-weight: normal; }
+.leaderboard li.mine { color: #2f9e6e; }
+
+.arcade-play { display: grid; gap: 10px; justify-items: center; }
+.arcade-bar { width: min(480px, 100%); display: flex; align-items: center; gap: 12px; border-left: 8px solid var(--c); padding-left: 10px; }
+.arcade-bar strong { flex: 1; font-family: var(--pixel); font-size: 11px; font-weight: normal; }
+.arcade-score, .arcade-best { font-family: var(--pixel); font-size: 9px; }
+.arcade-best { color: #6b6585; }
+.arcade-screen { position: relative; width: min(480px, 100%); border: 4px solid var(--ink); background: #1b1730; line-height: 0; }
+.arcade-screen canvas { width: 100%; aspect-ratio: 160 / 144; image-rendering: pixelated; }
+.arcade-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(16, 13, 25, .72);
+  color: var(--paper);
+  text-align: center;
+  line-height: 1.2;
+  font-size: 19px;
+}
+.arcade-overlay b { font-family: var(--pixel); font-size: 14px; font-weight: normal; }
+.arcade-info { width: min(480px, 100%); margin: 0; display: flex; justify-content: space-between; gap: 8px; font-size: 17px; color: #6b6585; }
+
 /* ---------- start screen ---------- */
 
 #start {
