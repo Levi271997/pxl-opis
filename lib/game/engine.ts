@@ -48,7 +48,7 @@ export interface Engine {
 export const HELP_PAGES = [
   'ARROWS or WASD to walk. Hold SHIFT to run.',
   'Face a coworker and press E or SPACE to talk. You can also click anywhere to walk there.',
-  'B opens the project board. T opens the team list. ESC closes windows.',
+  'B opens the project board, U the team status board, T the team list. ESC closes windows.',
 ];
 
 // Lets React components (board "Go" buttons, team list) drive the player.
@@ -565,6 +565,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     if (k === 'e' || k === ' ' || k === 'enter') { interact(); e.preventDefault(); }
     else if (k === 'b') ui().openModal({ kind: 'board' });
     else if (k === 't') ui().toggleTeam();
+    else if (k === 'u') ui().openModal({ kind: 'status' });
     else if (k === '?' || k === 'h') showHelp();
     else if (k === 'escape') ui().toggleTeam(false);
   }

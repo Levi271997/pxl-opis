@@ -19,7 +19,7 @@ export default function ModalHost() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).closest('input, select, textarea')) return;
       const k = e.key.toLowerCase();
-      if (k === 'escape' || (k === 'b' && modal.kind === 'board')) closeModal();
+      if (k === 'escape' || (k === 'b' && modal.kind === 'board') || (k === 'u' && modal.kind === 'status')) closeModal();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
