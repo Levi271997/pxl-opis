@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PRESENCE, PRIORITY, PROJECTS, STATUSES, type Priority, type ProjectId } from '@/lib/data';
+import { PRESENCE, PRIORITY, STATUSES, type Priority, type ProjectId } from '@/lib/data';
 import { getPerson, useOffice } from '@/lib/store';
 import { byStatusThenPriority, firstName } from '@/lib/tasks';
 import Portrait from './Portrait';
@@ -9,8 +9,9 @@ import TaskCard, { type CSSVars } from './TaskCard';
 
 function AddTaskForm({ assignee, label }: { assignee: string; label: string }) {
   const addTask = useOffice(s => s.addTask);
+  const projects = useOffice(s => s.projects);
   const [title, setTitle] = useState('');
-  const [project, setProject] = useState<ProjectId>('web');
+  const [project, setProject] = useState<ProjectId>(() => Object.keys(projects)[0] ?? '');
   const [priority, setPriority] = useState<Priority>('med');
 
   return (
@@ -30,7 +31,7 @@ function AddTaskForm({ assignee, label }: { assignee: string; label: string }) {
           value={title} onChange={e => setTitle(e.target.value)}
         />
         <select aria-label="Project" value={project} onChange={e => setProject(e.target.value as ProjectId)}>
-          {Object.entries(PROJECTS).map(([k, p]) => <option key={k} value={k}>{p.name}</option>)}
+          {Object.entries(projects).map(([k, p]) => <option key={k} value={k}>{p.name}</option>)}
         </select>
         <select aria-label="Priority" value={priority} onChange={e => setPriority(e.target.value as Priority)}>
           {Object.entries(PRIORITY).map(([k, p]) => <option key={k} value={k}>{p.label}</option>)}

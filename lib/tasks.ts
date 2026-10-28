@@ -17,7 +17,8 @@ export function byStatusThenPriority(a: Task, b: Task) {
 }
 
 export function nextTaskId(tasks: Task[]) {
-  return 'T-' + (Math.max(...tasks.map(t => parseInt(t.id.slice(2), 10))) + 1);
+  const numbers = tasks.map(t => parseInt((t.code ?? t.id).slice(2), 10)).filter(n => !Number.isNaN(n));
+  return 'T-' + (Math.max(100, ...numbers) + 1);
 }
 
 export function dueLabel(days: number) {

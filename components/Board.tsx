@@ -1,18 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { PROJECTS, STATUSES, type ProjectId } from '@/lib/data';
+import { STATUSES, type ProjectId } from '@/lib/data';
 import { useOffice } from '@/lib/store';
 import { byPriority } from '@/lib/tasks';
 import TaskCard, { type CSSVars } from './TaskCard';
 
-const FILTERS: [ProjectId | 'all', { name: string; color: string }][] = [
-  ['all', { name: 'All projects', color: '#2b2840' }],
-  ...(Object.entries(PROJECTS) as [ProjectId, { name: string; color: string }][]),
-];
+const ALL = { name: 'All projects', color: '#2b2840' };
 
 export default function Board() {
   const tasks = useOffice(s => s.tasks);
+  const projects = useOffice(s => s.projects);
+  const filters: [ProjectId | 'all', { name: string; color: string }][] = [['all', ALL], ...Object.entries(projects)];
   const updateTask = useOffice(s => s.updateTask);
   const [filter, setFilter] = useState<ProjectId | 'all'>('all');
   const [over, setOver] = useState<string | null>(null);
@@ -23,7 +22,7 @@ export default function Board() {
   return (
     <div className="board-wrap">
       <div className="chips">
-        {FILTERS.map(([k, p]) => (
+        {filters.map(([k, p]) => (
           <button
             key={k}
             className={`chip${filter === k ? ' active' : ''}`}

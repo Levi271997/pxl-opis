@@ -122,10 +122,12 @@ Open <http://localhost:3000>. You should land on the sign-in page. Sign in with
 any method, pick your avatar, and enter the office. Your name and avatar are
 saved to your profile and come back the next time you sign in.
 
+The first time you sign in, the app creates your workspace and fills it with the
+demo team, projects and tasks (stored in your database, so you can change or
+delete them in **Table Editor**). Task changes you make in the office are saved.
+
 ## What's next
 
-- Load the office (coworkers, projects, tasks) from the database instead of
-  `lib/data.ts`, using `create_demo_workspace()` for a new team.
 - Live updates and real presence with Supabase Realtime.
 - Connect Monday.com (OAuth). Its tokens go in the `integrations` table,
   read only by server code with the secret key.

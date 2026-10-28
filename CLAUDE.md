@@ -6,8 +6,9 @@ to see and manage their tasks.
 
 **Direction:** make everything dynamic with **Supabase** (auth + Postgres + Realtime)
 and sync tasks from **Monday.com** (first PM tool to integrate). Sign-in methods:
-**Google, Microsoft, email magic link**. Sign-in and the database schema exist; the
-office itself still runs on static data from `lib/data.ts` (see "Supabase" below).
+**Google, Microsoft, email magic link**. Sign-in works, and once signed in the office
+(coworkers, projects, tasks) loads from Supabase and task changes are saved there.
+Demo mode still uses `lib/data.ts` (see "Supabase" below).
 
 Repo: https://github.com/Levi271997/pxl-opis (branch `main`).
 
@@ -91,15 +92,27 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
   server-only). RLS everywhere else via `is_member(workspace_id)`. A trigger creates
   a profile on sign-up. `create_demo_workspace()` RPC creates a workspace for the
   current user and seeds the demo team/projects/tasks (keys via `external_ref = 'demo:*'`).
-  The SQL was syntax-checked with the Postgres parser but has **not yet been run on a
-  real Supabase project**: expect to fix small issues the first time it runs.
+  The owner has run it on their Supabase project and signed in with a magic link.
+- **Loading the office:** `app/page.tsx` calls `loadOffice()` (`lib/supabase/server.ts`):
+  `create_demo_workspace()` (returns the existing workspace after the first time), then
+  members/projects/tasks. `Office` converts the rows with `toOffice()`
+  (`lib/supabase/office.ts`) and calls the store's `load()` **before** the canvas mounts,
+  browser only (the store is a module singleton, so never fill it on the server).
+  Ids become uuids: coworker id = member id, `project` = project id, your own member
+  is still `'me'`, `Task.code` is the T-101 label. Only members with a desk and look
+  become NPCs. `updateTask` / `addTask` update the store first, then `saveTask` /
+  `insertTask`; on failure the change is rolled back. If loading fails, the server logs
+  the error and the office falls back to the demo data.
+- **Email links:** use the token_hash template (`/auth/confirm`); custom SMTP (free
+  Gmail app password) is needed before Supabase lets you edit templates.
 
 ## File map
 
 | Path | What it is |
 | --- | --- |
-| `lib/data.ts` | Types and all static data: `PROJECTS`, `STATUSES`, `PRIORITY`, `PRESENCE`, `COWORKERS` (position, look, dialog lines, blocker), `INITIAL_TASKS` (`dueIn` = days from today), `ANNOUNCEMENTS`, `WATER_GOAL`, `FOODS` |
-| `lib/store.ts` | Zustand store `useOffice`: player name/look, tasks, dialog/modal state, team panel, zone, water cups, fridge stock and lunch bag, plus actions. Also `getMode`, `getPerson`, `lookOf` |
+| `lib/data.ts` | Types and the demo-mode data: `PROJECTS`, `STATUSES`, `PRIORITY`, `PRESENCE`, `COWORKERS` (position, look, dialog lines, blocker), `INITIAL_TASKS` (`dueIn` = days from today), `ANNOUNCEMENTS`, `WATER_GOAL`, `FOODS` |
+| `lib/store.ts` | Zustand store `useOffice`: workspace, coworkers, projects, player name/look, tasks, dialog/modal state, team panel, zone, water cups, fridge stock and lunch bag, plus actions. Also `getMode`, `getPerson`, `lookOf`, `projectOf` |
+| `lib/supabase/office.ts` | Database row types, `toOffice()` (rows to store data), `saveTask` / `insertTask` |
 | `lib/tasks.ts` | Task helpers: status cycling, sorting, due-date labels, `nextTaskId`, `firstName` |
 | `lib/game/engine.ts` | Game loop, grid movement, BFS click-to-walk pathfinding, NPC idle/wander, interactions (`INTERACT` table keyed by tile char), drinking animation, open-fridge drawing, name tags and "E" prompts, camera, input |
 | `lib/game/map.ts` | `MAP_ROWS` text grid (53×21), legend, `SOLID`, `FLOORS`, `ZONES`, and procedural 16×16 tile painters (`PAINTERS`), `paintOpenFridge`, `renderMap()` |
@@ -168,12 +181,9 @@ Alex and Lena in row 14. Row 16 is clear.
 
 ## Next steps (agreed plan)
 
-1. Owner creates the Supabase project, fills `.env.local`, runs the migration, and
-   turns on Google/Microsoft (see `docs/SUPABASE.md`).
-2. Load the office from Supabase: on first visit call `create_demo_workspace()`,
-   then load members/projects/tasks into the store instead of `lib/data.ts`
-   (`Task.project` / `assignee` become uuids; the engine must create NPCs from loaded
-   members, possibly after the async load). Task changes write to the `tasks` table.
+1. Done: Supabase project, migration, magic-link sign-in. Still to do: turn on
+   Google/Microsoft (see `docs/SUPABASE.md`).
+2. Done: the office loads from Supabase and task changes are saved.
 3. Realtime: subscribe to `tasks` changes; use Realtime **Presence** for real
    online status and to show other signed-in players walking around.
 4. Monday.com integration: OAuth connect flow in Next.js route handlers, tokens in

@@ -2,7 +2,11 @@
 // the canvas engine reads it with `useOffice.getState()`.
 
 import { create } from 'zustand';
-import { COWORKERS, DEFAULT_LOOK, FOODS, INITIAL_TASKS, type FoodId, type Look, type Person, type Task } from './data';
+import {
+  COWORKERS, DEFAULT_LOOK, FOODS, INITIAL_TASKS, PROJECTS,
+  type Coworker, type FoodId, type Look, type Person, type Project, type Task,
+} from './data';
+import { insertTask, saveTask, type OfficeData, type Workspace } from './supabase/office';
 import { nextTaskId } from './tasks';
 
 export type Mode = 'start' | 'play' | 'dialog' | 'modal';
@@ -22,6 +26,9 @@ const foodCounts = (count: (id: FoodId) => number) =>
   Object.fromEntries(FOODS.map(f => [f.id, count(f.id)])) as FoodCounts;
 
 interface OfficeState {
+  workspace: Workspace | null; // null in demo mode: changes stay in this tab
+  coworkers: Coworker[];
+  projects: Record<string, Project>;
   started: boolean;
   player: { name: string; look: Look };
   tasks: Task[];
@@ -34,6 +41,7 @@ interface OfficeState {
   fridge: FoodCounts; // what's left in the fridge
   bag: FoodCounts; // what the player has taken
 
+  load: (office: OfficeData) => void;
   start: (name: string, look: Look) => void;
   drinkWater: () => number;
   takeFood: (id: FoodId) => void;
@@ -52,6 +60,9 @@ interface OfficeState {
 let dialogSeq = 0;
 
 export const useOffice = create<OfficeState>()((set, get) => ({
+  workspace: null,
+  coworkers: COWORKERS,
+  projects: PROJECTS,
   started: false,
   player: { name: 'You', look: DEFAULT_LOOK },
   tasks: INITIAL_TASKS,
@@ -64,6 +75,7 @@ export const useOffice = create<OfficeState>()((set, get) => ({
   fridge: foodCounts(id => FOODS.find(f => f.id === id)!.stock),
   bag: foodCounts(() => 0),
 
+  load: ({ workspace, coworkers, projects, tasks }) => set({ workspace, coworkers, projects, tasks }),
   start: (name, look) => set({ started: true, player: { name, look } }),
   drinkWater: () => {
     const cups = get().waterCups + 1;
@@ -87,8 +99,31 @@ export const useOffice = create<OfficeState>()((set, get) => ({
   closeModal: () => set({ modal: null }),
   toggleTeam: force => set(s => ({ teamOpen: force ?? !s.teamOpen })),
   setZone: zone => set(s => ({ zone, zoneTick: s.zoneTick + 1 })),
-  updateTask: (id, patch) => set(s => ({ tasks: s.tasks.map(t => (t.id === id ? { ...t, ...patch } : t)) })),
-  addTask: task => set(s => ({ tasks: [...s.tasks, { ...task, id: nextTaskId(s.tasks) }] })),
+
+  // Both task actions update the screen first, then save. If saving fails the
+  // change is undone, so the board never shows something the database doesn't have.
+  updateTask: (id, patch) => {
+    const { workspace, tasks } = get();
+    const before = tasks.find(t => t.id === id);
+    if (!before) return;
+    set({ tasks: tasks.map(t => (t.id === id ? { ...t, ...patch } : t)) });
+    if (!workspace) return;
+    saveTask(workspace, id, patch).catch(err => {
+      console.error('Could not save the task:', err.message);
+      set(s => ({ tasks: s.tasks.map(t => (t.id === id ? before : t)) }));
+    });
+  },
+  addTask: task => {
+    const { workspace, tasks } = get();
+    const code = nextTaskId(tasks);
+    const created: Task = { ...task, id: workspace ? crypto.randomUUID() : code, code };
+    set({ tasks: [...tasks, created] });
+    if (!workspace) return;
+    insertTask(workspace, created).catch(err => {
+      console.error('Could not save the new task:', err.message);
+      set(s => ({ tasks: s.tasks.filter(t => t.id !== created.id) }));
+    });
+  },
 }));
 
 export function getMode(s: Pick<OfficeState, 'started' | 'dialog' | 'modal'>): Mode {
@@ -98,11 +133,20 @@ export function getMode(s: Pick<OfficeState, 'started' | 'dialog' | 'modal'>): M
   return 'play';
 }
 
+const coworker = (id: string) => useOffice.getState().coworkers.find(c => c.id === id);
+
+// Tasks can be assigned to people without a desk in the office (or to nobody).
+const UNKNOWN: Person = { id: '', name: 'Unassigned', role: '', status: 'away' };
+
 export function getPerson(id: string, playerName: string): Person {
   if (id === 'me') return { id: 'me', name: playerName, role: 'You', status: 'online' };
-  return COWORKERS.find(c => c.id === id)!;
+  return coworker(id) ?? { ...UNKNOWN, id };
 }
 
 export function lookOf(id: string, playerLook: Look): Look {
-  return id === 'me' ? playerLook : COWORKERS.find(c => c.id === id)!.look;
+  return id === 'me' ? playerLook : coworker(id)?.look ?? DEFAULT_LOOK;
+}
+
+export function projectOf(id: string, projects: Record<string, Project>): Project {
+  return projects[id] ?? { name: 'No project', color: '#7c819c' };
 }

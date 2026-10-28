@@ -1,6 +1,6 @@
 'use client';
 
-import { COWORKERS, PRESENCE, type Presence } from '@/lib/data';
+import { PRESENCE, type Presence } from '@/lib/data';
 import { engineRef } from '@/lib/game/engine';
 import { getPerson, useOffice } from '@/lib/store';
 import { byPriority, firstName } from '@/lib/tasks';
@@ -14,9 +14,10 @@ const PRESENCE_ORDER: Presence[] = ['online', 'busy', 'away'];
 export default function StatusBoard() {
   const tasks = useOffice(s => s.tasks);
   const playerName = useOffice(s => s.player.name);
+  const coworkers = useOffice(s => s.coworkers);
   const { openModal, closeModal } = useOffice.getState();
 
-  const people = [getPerson('me', playerName), ...COWORKERS];
+  const people = [getPerson('me', playerName), ...coworkers];
   const totals = PRESENCE_ORDER.map(p => [p, people.filter(x => x.status === p).length] as const);
 
   return (

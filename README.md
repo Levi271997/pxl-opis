@@ -19,7 +19,7 @@ To turn on sign-in (Google, Microsoft, email link) and the database, follow
 
 | Path | What it is |
 | --- | --- |
-| `lib/data.ts` | Static demo data (coworkers, tasks, projects) and types |
+| `lib/data.ts` | Types and demo-mode data (coworkers, tasks, projects) |
 | `lib/store.ts` | Zustand store: tasks + UI state, shared by React and the game |
 | `lib/game/engine.ts` | Canvas game loop: movement, pathfinding, NPCs, drawing |
 | `lib/game/map.ts` | Office layout (text grid) and tile art |
@@ -30,6 +30,6 @@ The game never renders through React. `GameCanvas` mounts the engine once,
 the engine reads and writes the store, and React components re-render from the
 store. React components move the player through `engineRef.current.walkToPerson(id)`.
 
-Tasks live in memory only, so a reload resets them. To add a backend, replace
-`INITIAL_TASKS` and the `updateTask` / `addTask` actions in `lib/store.ts` with
-API calls.
+When signed in, the office is loaded from Supabase and task changes are saved
+there (`lib/supabase/office.ts`). In demo mode tasks live in memory, so a reload
+resets them.

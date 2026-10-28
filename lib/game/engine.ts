@@ -2,7 +2,7 @@
 // coworkers, interactions and rendering. It talks to React only through the
 // zustand store (reads state, calls actions like openDialog / openModal).
 
-import { ANNOUNCEMENTS, COWORKERS, FOODS, PLAYER_START, PRESENCE, WATER_GOAL, type Dir, type Presence } from '../data';
+import { ANNOUNCEMENTS, FOODS, PLAYER_START, PRESENCE, WATER_GOAL, type Dir, type Presence } from '../data';
 import { getMode, getPerson, useOffice } from '../store';
 import { firstName } from '../tasks';
 import { MAP_H, MAP_W, TILE, isSolid, paintOpenFridge, rect, renderMap, tileAt, zoneAt } from './map';
@@ -108,7 +108,8 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     ...makeEntity(PLAYER_START.x, PLAYER_START.y, 'up', spritesFor(ui().player.look)),
     path: [], goal: null, dest: null,
   };
-  const npcs: Npc[] = COWORKERS.map(c => ({
+  // Coworkers are loaded into the store before the canvas mounts (see Office).
+  const npcs: Npc[] = ui().coworkers.map(c => ({
     ...makeEntity(c.x, c.y, c.dir, spritesFor(c.look)),
     id: c.id, homeDir: c.dir, wander: c.wander ?? null, timer: Math.random() * 3, talking: false,
   }));
@@ -340,7 +341,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
   }
 
   function talkTo(npc: Npc) {
-    const person = COWORKERS.find(c => c.id === npc.id)!;
+    const person = ui().coworkers.find(c => c.id === npc.id)!;
     const speaker = firstName(person.name).toUpperCase();
     cancelPath();
     npc.talking = true;

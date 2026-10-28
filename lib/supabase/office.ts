@@ -1,0 +1,144 @@
+// Turns the workspace's database rows into the shapes the office uses, and
+// writes task changes back. Rows are loaded on the server (loadOffice in
+// server.ts); the conversion runs in the browser so "due in N days" uses the
+// viewer's own calendar.
+
+import type { Coworker, Dir, Look, Presence, Priority, Project, StatusId, Task } from '../data';
+import { createClient } from './client';
+
+export interface MemberRow {
+  id: string;
+  user_id: string | null;
+  display_name: string;
+  role_title: string;
+  presence: Presence;
+  look: Look | null;
+  desk_x: number | null;
+  desk_y: number | null;
+  home_dir: Dir;
+  wander: Coworker['wander'] | null;
+  greeting: string[];
+  blocker: string | null;
+}
+
+export interface ProjectRow {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface TaskRow {
+  id: string;
+  project_id: string | null;
+  assignee_id: string | null;
+  code: string | null;
+  title: string;
+  status: StatusId;
+  priority: Priority;
+  due_date: string | null; // YYYY-MM-DD
+}
+
+export interface OfficeRows {
+  workspaceId: string;
+  userId: string;
+  members: MemberRow[];
+  projects: ProjectRow[];
+  tasks: TaskRow[];
+}
+
+// What the store needs to talk to the database. null in demo mode.
+export interface Workspace {
+  id: string;
+  meId: string; // the signed-in user's row in members
+}
+
+export interface OfficeData {
+  workspace: Workspace;
+  coworkers: Coworker[];
+  projects: Record<string, Project>;
+  tasks: Task[];
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+
+function today() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function daysUntil(date: string | null) {
+  if (!date) return 7;
+  const [y, m, d] = date.split('-').map(Number);
+  return Math.round((new Date(y, m - 1, d).getTime() - today().getTime()) / DAY);
+}
+
+function dateIn(days: number) {
+  const d = today();
+  d.setDate(d.getDate() + days);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function toOffice(rows: OfficeRows): OfficeData | null {
+  const me = rows.members.find(m => m.user_id === rows.userId);
+  if (!me) return null;
+
+  // Only people with a desk get walked around the office. Anyone else (e.g.
+  // synced from Monday.com later) still shows up on task cards.
+  const coworkers: Coworker[] = rows.members
+    .filter(m => m.id !== me.id && m.desk_x !== null && m.desk_y !== null && m.look)
+    .map(m => ({
+      id: m.id,
+      name: m.display_name,
+      role: m.role_title,
+      status: m.presence,
+      x: m.desk_x!,
+      y: m.desk_y!,
+      dir: m.home_dir,
+      wander: m.wander ?? undefined,
+      look: m.look!,
+      greeting: m.greeting.length ? m.greeting : [`Hi, I'm ${m.display_name}.`],
+      blocker: m.blocker ?? 'Nothing blocking me right now.',
+    }));
+
+  return {
+    workspace: { id: rows.workspaceId, meId: me.id },
+    coworkers,
+    projects: Object.fromEntries(rows.projects.map(p => [p.id, { name: p.name, color: p.color }])),
+    tasks: rows.tasks.map(t => ({
+      id: t.id,
+      code: t.code ?? undefined,
+      title: t.title,
+      project: t.project_id ?? '',
+      assignee: t.assignee_id === me.id ? 'me' : t.assignee_id ?? '',
+      status: t.status,
+      priority: t.priority,
+      dueIn: daysUntil(t.due_date),
+    })),
+  };
+}
+
+// Only the fields that were changed, as database columns.
+function toRow(ws: Workspace, task: Partial<Task>) {
+  const row: Partial<Omit<TaskRow, 'id'>> = {};
+  if (task.code !== undefined) row.code = task.code;
+  if (task.title !== undefined) row.title = task.title;
+  if (task.status !== undefined) row.status = task.status;
+  if (task.priority !== undefined) row.priority = task.priority;
+  if (task.dueIn !== undefined) row.due_date = dateIn(task.dueIn);
+  if (task.project !== undefined) row.project_id = task.project || null;
+  if (task.assignee !== undefined) row.assignee_id = task.assignee === 'me' ? ws.meId : task.assignee || null;
+  return row;
+}
+
+export async function saveTask(ws: Workspace, id: string, patch: Partial<Task>) {
+  const { error } = await createClient().from('tasks').update(toRow(ws, patch)).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function insertTask(ws: Workspace, task: Task) {
+  const { error } = await createClient()
+    .from('tasks')
+    .insert({ id: task.id, workspace_id: ws.id, ...toRow(ws, task) });
+  if (error) throw new Error(error.message);
+}

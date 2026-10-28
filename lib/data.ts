@@ -1,9 +1,10 @@
-// Static demo data — no backend yet. Later, load these from an API / database.
+// Types, plus the demo office used when Supabase isn't set up. Once signed in,
+// people, projects and tasks come from the database instead (lib/supabase/office.ts).
 
 export type Dir = 'up' | 'down' | 'left' | 'right';
 export type StatusId = 'todo' | 'doing' | 'review' | 'done';
 export type Priority = 'high' | 'med' | 'low';
-export type ProjectId = 'web' | 'app' | 'q4';
+export type ProjectId = string; // 'web' | 'app' | 'q4' in the demo, a uuid from the database
 export type Presence = 'online' | 'busy' | 'away';
 export type HairStyle = 'short' | 'long' | 'bun' | 'spiky';
 
@@ -32,8 +33,14 @@ export interface Coworker extends Person {
   blocker: string;
 }
 
+export interface Project {
+  name: string;
+  color: string;
+}
+
 export interface Task {
   id: string;
+  code?: string; // label shown on the card, like T-101 (the demo uses the id itself)
   title: string;
   project: ProjectId;
   assignee: string; // coworker id, or 'me' for the player
@@ -42,7 +49,7 @@ export interface Task {
   dueIn: number; // days from today (negative = overdue), so the demo never goes stale
 }
 
-export const PROJECTS: Record<ProjectId, { name: string; color: string }> = {
+export const PROJECTS: Record<ProjectId, Project> = {
   web: { name: 'Website Redesign', color: '#4f7fe0' },
   app: { name: 'Mobile App v2', color: '#d4508a' },
   q4: { name: 'Q4 Launch', color: '#d97a12' },

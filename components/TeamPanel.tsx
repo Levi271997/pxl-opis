@@ -1,6 +1,6 @@
 'use client';
 
-import { COWORKERS, PRESENCE } from '@/lib/data';
+import { PRESENCE } from '@/lib/data';
 import { engineRef } from '@/lib/game/engine';
 import { getPerson, useOffice } from '@/lib/store';
 import Portrait from './Portrait';
@@ -9,11 +9,12 @@ export default function TeamPanel() {
   const open = useOffice(s => s.teamOpen);
   const tasks = useOffice(s => s.tasks);
   const playerName = useOffice(s => s.player.name);
+  const coworkers = useOffice(s => s.coworkers);
   const { toggleTeam, openModal } = useOffice.getState();
   if (!open) return null;
 
-  const people = [getPerson('me', playerName), ...COWORKERS];
-  const here = COWORKERS.filter(c => c.status !== 'away').length + 1;
+  const people = [getPerson('me', playerName), ...coworkers];
+  const here = coworkers.filter(c => c.status !== 'away').length + 1;
 
   return (
     <aside className="team">

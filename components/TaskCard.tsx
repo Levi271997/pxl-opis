@@ -1,8 +1,8 @@
 'use client';
 
-import { PRIORITY, PROJECTS, type Task } from '@/lib/data';
+import { PRIORITY, type Task } from '@/lib/data';
 import { engineRef } from '@/lib/game/engine';
-import { getPerson, useOffice } from '@/lib/store';
+import { getPerson, projectOf, useOffice } from '@/lib/store';
 import { dueDate, dueLabel, firstName, nextStatus, statusInfo } from '@/lib/tasks';
 import Portrait from './Portrait';
 
@@ -11,12 +11,13 @@ type CSSVars = React.CSSProperties & { '--c'?: string };
 function AssigneeChip({ id }: { id: string }) {
   const playerName = useOffice(s => s.player.name);
   const closeModal = useOffice(s => s.closeModal);
+  const atDesk = useOffice(s => s.coworkers.some(c => c.id === id));
   const person = getPerson(id, playerName);
   return (
     <span className="assignee">
       <Portrait id={id} />
       <span>{id === 'me' ? 'You' : firstName(person.name)}</span>
-      {id !== 'me' && (
+      {atDesk && (
         <button
           className="go-btn"
           title={`Walk over to ${firstName(person.name)}`}
@@ -35,7 +36,7 @@ export default function TaskCard({ task, showAssignee = true, draggable = false 
   draggable?: boolean;
 }) {
   const updateTask = useOffice(s => s.updateTask);
-  const proj = PROJECTS[task.project];
+  const proj = projectOf(task.project, useOffice(s => s.projects));
   const st = statusInfo(task.status);
   const pr = PRIORITY[task.priority];
   const dueCls = task.dueIn < 0 ? ' overdue' : task.dueIn <= 1 ? ' soon' : '';
@@ -49,7 +50,7 @@ export default function TaskCard({ task, showAssignee = true, draggable = false 
     >
       <div className="card-top">
         <span className="tag" style={{ '--c': proj.color } as CSSVars}>{proj.name}</span>
-        <span className="card-id">{task.id}</span>
+        <span className="card-id">{task.code ?? task.id}</span>
       </div>
       <h4 className="card-title">{task.title}</h4>
       <div className="card-meta">
