@@ -125,8 +125,8 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `components/StatusBoard.tsx` | Team status board: everyone's presence, current task, counts |
 | `components/FridgePanel.tsx` / `FoodIcon.tsx` | Fridge contents, Take/Put back, lunch bag |
 | `components/ArcadePanel.tsx` | Arcade menu with best scores and team top 5, and the game screen (canvas 160×144 scaled up, keyboard input, pause, game over, posts the score) |
-| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
-| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migration `20261029000000_arcade_scores.sql`, must be run separately) |
+| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop), `race.ts` (Turbo Lane). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
+| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql` and `20261030000000_arcade_race.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
 | `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, avatar picker, room sign, sprite portrait |
@@ -178,6 +178,7 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
 9. Arcade (3 cabinets, tile `A`, below the player start): Snake, Breakout, Block Drop,
    personal bests in localStorage, team leaderboard in Supabase. Decided against a
    Game Boy emulator with commercial ROMs (Tetris/Mario are copyrighted).
+10. Turbo Lane, a top-down racing game, added to the arcade.
 
 Everything else still resets on reload: tasks, water, fridge stock.
 

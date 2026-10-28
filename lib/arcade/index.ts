@@ -1,5 +1,6 @@
 import { createBlocks } from './blocks';
 import { createBreakout } from './breakout';
+import { createRace } from './race';
 import { createSnake } from './snake';
 import type { GameDef, GameId } from './types';
 
@@ -18,6 +19,11 @@ export const GAMES: GameDef[] = [
     id: 'blocks', title: 'Block Drop', color: '#f2a33a', create: createBlocks,
     blurb: 'Stack the falling pieces and clear full rows. Clear 4 at once for big points.',
     controls: 'Left / right to move · Up to rotate · Down to drop faster · Space to slam',
+  },
+  {
+    id: 'race', title: 'Turbo Lane', color: '#d64545', create: createRace,
+    blurb: 'Weave through traffic and grab coffee for bonus points. Three crashes and you are out.',
+    controls: 'Left / right to steer · Up to speed up · Down to brake',
   },
 ];
 

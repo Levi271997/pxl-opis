@@ -19,7 +19,7 @@ export interface Game {
   draw(g: CanvasRenderingContext2D): void;
 }
 
-export type GameId = 'snake' | 'breakout' | 'blocks';
+export type GameId = 'snake' | 'breakout' | 'blocks' | 'race';
 
 export interface GameDef {
   id: GameId;
