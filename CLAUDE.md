@@ -115,7 +115,7 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `lib/supabase/office.ts` | Database row types, `toOffice()` (rows to store data), `saveTask` / `insertTask` |
 | `lib/tasks.ts` | Task helpers: status cycling, sorting, due-date labels, `nextTaskId`, `firstName` |
 | `lib/game/engine.ts` | Game loop, grid movement, BFS click-to-walk pathfinding, NPC idle/wander, interactions (`INTERACT` table keyed by tile char), drinking animation, open-fridge drawing, name tags and "E" prompts, camera, input |
-| `lib/game/map.ts` | `MAP_ROWS` text grid (53×21), legend, `SOLID`, `FLOORS`, `ZONES`, and procedural 16×16 tile painters (`PAINTERS`), `paintOpenFridge`, `renderMap()` |
+| `lib/game/map.ts` | `MAP_ROWS` text grid (37×17), legend, `SOLID`, `FLOORS`, `ZONES`, and procedural 16×16 tile painters (`PAINTERS`), `paintOpenFridge`, `renderMap()` |
 | `lib/game/sprites.ts` | Characters drawn in code (16×22, 4 directions × 3 walk frames), cached per look; `drawPortrait` for HUD/cards |
 | `lib/game/food.ts` | 12×12 pixel art for fridge items (one char per pixel + palette) |
 | `components/Office.tsx` | Composes the whole page |
@@ -135,10 +135,14 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 ## The office map
 
 Edit the map in `lib/game/map.ts`. Each row is a string, and every row must be the
-same width (currently 53). The rooms along the top row are Meeting Room (cols 1–12),
-Kitchen (14–25), Dining Room (27–38; the Kitchen connects to it through a doorway
-at col 26, rows 4–5) and Omar's Office (40–51). The open office is rows 9–19. Doors
-in row 8 are at cols 6–7, 18–21, 32–33 and 45–46.
+same width (currently 37; the map is 37×17). The rooms along the top row are Meeting
+Room (cols 1–8), Kitchen (10–17), Dining Room (19–26; the Kitchen connects to it
+through a doorway at col 18, rows 3–4) and Omar's Office (28–35), all rows 1–5. The
+open office is rows 7–15. Doors in row 6 are at cols 4–5, 13–14, 22–23 and 33–34.
+Player start is (17,13). If you move desks, update `COWORKERS` in `lib/data.ts` **and**
+add a migration that moves the `demo:*` members and replaces `create_demo_workspace()`
+(see `20261031000000_compact_office.sql`). The engine moves any NPC whose saved spot is
+solid or off the map to the nearest free tile (`freeTileNear`).
 
 Legend: `#` wall, `.` wood, `,` carpet, `_` kitchen tile, `o` dining tile, `r` rug,
 `d` desk, `p` plant, `b` bookshelf (opens the reader), `A` arcade machine (opens the arcade), `W` whiteboard (opens the project board),
@@ -179,6 +183,8 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
    personal bests in localStorage, team leaderboard in Supabase. Decided against a
    Game Boy emulator with commercial ROMs (Tetris/Mario are copyrighted).
 10. Turbo Lane, a top-down racing game, added to the arcade.
+11. Smaller office: map 53×21 → 37×17, all rooms and furniture kept, coworkers moved
+    (migration `20261031000000_compact_office.sql` moves them in existing workspaces).
 
 Everything else still resets on reload: tasks, water, fridge stock.
 
@@ -188,8 +194,8 @@ Headless Chromium through `playwright-core`, installed in a scratch folder (not 
 project dependency). Load the page, enter a name, then drive it with key taps
 (each ~60 ms press = one tile at walk speed) or the Team panel's "Go" buttons, and
 check DOM text (`#zone-name`, `#dialog-text`, `#modal-title`, `.water`) plus
-screenshots. Plan routes around NPCs: Maya, Jordan, Priya and Sam stand in row 10,
-Alex and Lena in row 14. Row 16 is clear.
+screenshots. Plan routes around NPCs: Maya, Jordan, Priya and Sam stand in row 8,
+Alex and Lena in row 11. Rows 13–14 are clear; the arcade is 2 tiles below the start.
 
 ## Next steps (agreed plan)
 

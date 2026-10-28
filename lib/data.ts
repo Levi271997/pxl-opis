@@ -74,62 +74,62 @@ export const PRESENCE: Record<Presence, { label: string; color: string }> = {
   away: { label: 'Away', color: '#facc15' },
 };
 
-export const PLAYER_START = { x: 20, y: 16 };
+export const PLAYER_START = { x: 17, y: 13 };
 export const DEFAULT_LOOK: Look = { skin: '#e8b58a', hair: '#5a3825', hairStyle: 'short', shirt: '#3fb27f', pants: '#2d3047' };
 
 export const COWORKERS: Coworker[] = [
   {
-    id: 'maya', name: 'Maya Chen', role: 'Product Designer', status: 'online', x: 4, y: 10, dir: 'down',
+    id: 'maya', name: 'Maya Chen', role: 'Product Designer', status: 'online', x: 3, y: 8, dir: 'down',
     look: { skin: '#f1c27d', hair: '#2b1b17', hairStyle: 'long', shirt: '#e0679b', pants: '#34344a' },
     greeting: ["Hi! I'm Maya. I make things look good.", 'The onboarding mockups are almost ready for review.'],
     blocker: 'Waiting on final copy from Lena for the welcome screens.',
   },
   {
-    id: 'jordan', name: 'Jordan Reyes', role: 'Frontend Dev', status: 'online', x: 11, y: 10, dir: 'down',
+    id: 'jordan', name: 'Jordan Reyes', role: 'Frontend Dev', status: 'online', x: 9, y: 8, dir: 'down',
     look: { skin: '#c68642', hair: '#1a1a1a', hairStyle: 'spiky', shirt: '#5b8def', pants: '#2d3047' },
     greeting: ['Yo! Jordan here. Pushing pixels into production.'],
     blocker: "Safari keeps breaking the nav. I'm on it, but it's a fight.",
   },
   {
-    id: 'priya', name: 'Priya Nair', role: 'Backend Dev', status: 'online', x: 28, y: 10, dir: 'down',
+    id: 'priya', name: 'Priya Nair', role: 'Backend Dev', status: 'online', x: 24, y: 8, dir: 'down',
     look: { skin: '#a86b3c', hair: '#111111', hairStyle: 'bun', shirt: '#8e6bd8', pants: '#3a3a50' },
     greeting: ["Hey, I'm Priya. If it has an API, I probably wrote it."],
     blocker: 'Need a decision on token lifetime before I can finish auth.',
   },
   {
-    id: 'sam', name: 'Sam Okafor', role: 'QA Engineer', status: 'online', x: 35, y: 10, dir: 'down',
+    id: 'sam', name: 'Sam Okafor', role: 'QA Engineer', status: 'online', x: 30, y: 8, dir: 'down',
     look: { skin: '#ffdbac', hair: '#d9a441', hairStyle: 'short', shirt: '#f2a33a', pants: '#4a4e69' },
     greeting: ["Sam, QA. I break things so customers don't have to."],
     blocker: 'Blocked until the Safari fix lands on staging.',
   },
   {
-    id: 'alex', name: 'Alex Kim', role: 'DevOps', status: 'busy', x: 4, y: 14, dir: 'down',
+    id: 'alex', name: 'Alex Kim', role: 'DevOps', status: 'busy', x: 3, y: 11, dir: 'down',
     look: { skin: '#e0ac69', hair: '#7a2e1f', hairStyle: 'spiky', shirt: '#3a3f4b', pants: '#22252f' },
     greeting: ['Alex. Keeping the servers alive.'],
     blocker: 'CI runners are maxed out. Budget approval would help.',
   },
   {
-    id: 'lena', name: 'Lena Fischer', role: 'Marketing Lead', status: 'online', x: 28, y: 14, dir: 'down',
+    id: 'lena', name: 'Lena Fischer', role: 'Marketing Lead', status: 'online', x: 24, y: 11, dir: 'down',
     look: { skin: '#ffe0bd', hair: '#e8c36a', hairStyle: 'long', shirt: '#46b5a6', pants: '#3b3355' },
     greeting: ['Lena from marketing! Launch is in three weeks, no pressure.'],
     blocker: 'Need final screenshots of the app for the launch emails.',
   },
   {
-    id: 'omar', name: 'Omar Haddad', role: 'Project Manager', status: 'online', x: 43, y: 2, dir: 'down',
+    id: 'omar', name: 'Omar Haddad', role: 'Project Manager', status: 'online', x: 30, y: 2, dir: 'down',
     look: { skin: '#8d5524', hair: '#1b1b1b', hairStyle: 'short', shirt: '#f4f4f4', pants: '#2b2d42' },
     greeting: ['Welcome to my office. Grab a seat.', "I keep the roadmap honest. Let's talk priorities."],
     blocker: 'Two teams want the same sprint. Classic.',
   },
   {
-    id: 'tom', name: 'Tom Becker', role: 'Data Analyst', status: 'away', x: 20, y: 4, dir: 'down',
-    wander: { x1: 14, y1: 2, x2: 38, y2: 7 }, // kitchen + dining room
+    id: 'tom', name: 'Tom Becker', role: 'Data Analyst', status: 'away', x: 14, y: 3, dir: 'down',
+    wander: { x1: 10, y1: 1, x2: 26, y2: 5 }, // kitchen + dining room
     look: { skin: '#f5c9a0', hair: '#6b4226', hairStyle: 'short', shirt: '#d64545', pants: '#3a3a50' },
     greeting: ['Oh, hey! Just on a lunch break.', 'The funnel numbers look interesting, by the way.'],
     blocker: 'Event names are a mess. Half the dashboard is guesswork.',
   },
   {
-    id: 'rosa', name: 'Rosa Lindqvist', role: 'UX Researcher', status: 'online', x: 6, y: 6, dir: 'down',
-    wander: { x1: 1, y1: 2, x2: 12, y2: 7 },
+    id: 'rosa', name: 'Rosa Lindqvist', role: 'UX Researcher', status: 'online', x: 5, y: 2, dir: 'down',
+    wander: { x1: 1, y1: 1, x2: 8, y2: 5 },
     look: { skin: '#fbd3b4', hair: '#b5452b', hairStyle: 'bun', shirt: '#9be37a', pants: '#2d3047' },
     greeting: ['Hi! Prepping the room for user interviews.'],
     blocker: 'Still recruiting two more participants for Thursday.',

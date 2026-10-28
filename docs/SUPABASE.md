@@ -34,8 +34,9 @@ fills a new team's office with the demo coworkers and tasks.
 
 Then do the same, in order, with the other files in `supabase/migrations/`:
 `20261029000000_arcade_scores.sql` (the arcade leaderboard) and
-`20261030000000_arcade_race.sql` (lets the race game post scores). The games work
-without them, but scores aren't shared.
+`20261030000000_arcade_race.sql` (lets the race game post scores), and
+`20261031000000_compact_office.sql` (moves the demo coworkers to their desks in the
+smaller office map). The games work without the arcade ones, but scores aren't shared.
 
 (If you later install the Supabase CLI, `supabase link` and `supabase db push`
 apply the same file.)

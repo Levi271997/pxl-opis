@@ -13,6 +13,21 @@ const RUN_SPEED = 9;
 const NPC_SPEED = 3;
 const DIRS: Record<Dir, [number, number]> = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const DIR_NAMES = Object.keys(DIRS) as Dir[];
+
+// The closest walkable tile to (x, y) that nobody else stands on, searching
+// outward ring by ring. Falls back to the player start if the map is full.
+function freeTileNear(x: number, y: number, taken: Set<string>) {
+  const cx = Math.max(0, Math.min(MAP_W - 1, Math.round(x)));
+  const cy = Math.max(0, Math.min(MAP_H - 1, Math.round(y)));
+  for (let r = 0; r < Math.max(MAP_W, MAP_H); r++) {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+      const tx = cx + dx, ty = cy + dy;
+      if (tx >= 0 && ty >= 0 && tx < MAP_W && ty < MAP_H && !isSolid(tx, ty) && !taken.has(`${tx},${ty}`)) return { x: tx, y: ty };
+    }
+  }
+  return { ...PLAYER_START };
+}
 const KEY_DIRS: Record<string, Dir> = {
   arrowup: 'up', w: 'up', arrowdown: 'down', s: 'down',
   arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
@@ -109,10 +124,17 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     path: [], goal: null, dest: null,
   };
   // Coworkers are loaded into the store before the canvas mounts (see Office).
-  const npcs: Npc[] = ui().coworkers.map(c => ({
-    ...makeEntity(c.x, c.y, c.dir, spritesFor(c.look)),
-    id: c.id, homeDir: c.dir, wander: c.wander ?? null, timer: Math.random() * 3, talking: false,
-  }));
+  // Saved desk spots can point at a wall (e.g. from an older, bigger map), so
+  // anyone who doesn't fit is moved to the nearest free tile.
+  const taken = new Set([`${PLAYER_START.x},${PLAYER_START.y}`]);
+  const npcs: Npc[] = ui().coworkers.map(c => {
+    const spot = freeTileNear(c.x, c.y, taken);
+    taken.add(`${spot.x},${spot.y}`);
+    return {
+      ...makeEntity(spot.x, spot.y, c.dir, spritesFor(c.look)),
+      id: c.id, homeDir: c.dir, wander: c.wander ?? null, timer: Math.random() * 3, talking: false,
+    };
+  });
   const npcById = (id: string) => npcs.find(n => n.id === id);
 
   const say = (pages: string[], speaker?: string) => ui().openDialog({ pages, speaker });
