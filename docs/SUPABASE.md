@@ -47,8 +47,45 @@ apply the same file.)
 ### Email magic link
 
 Already on by default (**Authentication → Sign In / Providers → Email**).
-The built-in email sender only allows a few emails per hour. Fine for testing;
-for real use, add your own SMTP under **Authentication → Emails → SMTP Settings**.
+The built-in email sender only allows a few emails per hour, only delivers to
+members of your Supabase organization, and doesn't let you edit the templates.
+To fix that for free, send through a Gmail account:
+
+1. On the Google account, turn on **2-Step Verification**, then create an app
+   password at <https://myaccount.google.com/apppasswords> (name it "Supabase").
+   Copy the 16-character password.
+2. In Supabase, open **Authentication → Emails → SMTP Settings**, switch on
+   **Enable custom SMTP**, and fill in:
+   - Sender email: the Gmail address
+   - Sender name: `Pxl Opis`
+   - Host: `smtp.gmail.com`
+   - Port: `465`
+   - Username: the Gmail address
+   - Password: the app password (without spaces)
+3. Click **Save**.
+
+Gmail allows about 500 emails a day, plenty for a small team. When you outgrow
+it, Brevo's free plan (300 a day) works the same way: host
+`smtp-relay.brevo.com`, port `587`, and the login and SMTP key from Brevo's
+**SMTP & API** page. Keep these passwords in the Supabase dashboard only, never
+in `.env.local` or git.
+
+**Change the email template so links work in any browser.** By default the link
+only works in the same browser you requested it from (otherwise you get
+"PKCE code verifier not found"). To fix that:
+
+1. Open **Authentication → Emails → Templates → Magic Link**.
+2. Replace the link in the message body with:
+
+   ```html
+   <h2>Sign in to Pxl Opis</h2>
+   <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Enter the office</a></p>
+   ```
+
+3. Click **Save**.
+
+New users get the **Confirm signup** email instead the first time. Change that
+template the same way, with `type=email` as well.
 
 ### Google
 
