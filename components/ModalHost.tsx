@@ -9,6 +9,7 @@ import BookshelfPanel from './BookshelfPanel';
 import FridgePanel from './FridgePanel';
 import PersonPanel from './PersonPanel';
 import StatusBoard from './StatusBoard';
+import TeamManager from './TeamManager';
 
 export default function ModalHost() {
   const modal = useOffice(s => s.modal);
@@ -33,6 +34,7 @@ export default function ModalHost() {
     : modal.kind === 'fridge' ? 'Fridge'
     : modal.kind === 'bookshelf' ? 'Bookshelf'
     : modal.kind === 'arcade' ? 'Arcade'
+    : modal.kind === 'manage-team' ? 'Manage team'
     : modal.id === 'me' ? 'My tasks' : `${firstName(getPerson(modal.id, playerName).name)}'s desk`;
 
   return (
@@ -52,6 +54,7 @@ export default function ModalHost() {
           {modal.kind === 'fridge' && <FridgePanel />}
           {modal.kind === 'bookshelf' && <BookshelfPanel />}
           {modal.kind === 'arcade' && <ArcadePanel />}
+          {modal.kind === 'manage-team' && <TeamManager />}
           {modal.kind === 'person' && <PersonPanel id={modal.id} />}
         </div>
       </div>

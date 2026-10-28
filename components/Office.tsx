@@ -12,7 +12,11 @@ import StartScreen from './StartScreen';
 import TeamPanel from './TeamPanel';
 import ZoneBanner from './ZoneBanner';
 
-export default function Office({ account, office }: { account: Account | null; office: OfficeRows | null }) {
+export default function Office({ account, office, notice }: {
+  account: Account | null;
+  office: OfficeRows | null;
+  notice: string | null; // e.g. after accepting an invite
+}) {
   // Fill the store before anything mounts: the canvas engine places the
   // coworkers once, when it starts. Without a workspace the demo data stays.
   // Browser only: on the server the store is shared by every request.
@@ -38,7 +42,7 @@ export default function Office({ account, office }: { account: Account | null; o
       )}
       <DialogBox />
       <ModalHost />
-      {!started && <StartScreen account={account} />}
+      {!started && <StartScreen account={account} notice={notice} />}
     </>
   );
 }

@@ -10,6 +10,7 @@ export default function TeamPanel() {
   const tasks = useOffice(s => s.tasks);
   const playerName = useOffice(s => s.player.name);
   const coworkers = useOffice(s => s.coworkers);
+  const signedIn = useOffice(s => s.workspace !== null);
   const { toggleTeam, openModal } = useOffice.getState();
   if (!open) return null;
 
@@ -21,6 +22,7 @@ export default function TeamPanel() {
       <div className="team-head">
         <span>Team</span>
         <span id="team-count">{here} in the office</span>
+        {signedIn && <button className="mini-btn" onClick={() => openModal({ kind: 'manage-team' })}>Manage</button>}
         <button className="icon-btn" aria-label="Close team list" onClick={() => toggleTeam(false)}>×</button>
       </div>
       <ul id="team-list">

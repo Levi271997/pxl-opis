@@ -77,6 +77,24 @@ export const PRESENCE: Record<Presence, { label: string; color: string }> = {
 export const PLAYER_START = { x: 17, y: 13 };
 export const DEFAULT_LOOK: Look = { skin: '#e8b58a', hair: '#5a3825', hairStyle: 'short', shirt: '#3fb27f', pants: '#2d3047' };
 
+// Where real teammates sit, in the order desks are handed out (the spot in
+// front of each desk). Anyone past the last desk stands near the middle.
+export const DESK_SLOTS = [
+  { x: 3, y: 8 }, { x: 9, y: 8 }, { x: 24, y: 8 }, { x: 30, y: 8 },
+  { x: 3, y: 11 }, { x: 9, y: 11 }, { x: 24, y: 11 }, { x: 30, y: 11 },
+  { x: 30, y: 2 },
+];
+
+// A teammate who hasn't picked an avatar yet gets one of these (stable per person).
+export const STARTER_LOOKS: Look[] = [
+  { skin: '#f1c27d', hair: '#2b1b17', hairStyle: 'long', shirt: '#e0679b', pants: '#34344a' },
+  { skin: '#c68642', hair: '#1a1a1a', hairStyle: 'spiky', shirt: '#5b8def', pants: '#2d3047' },
+  { skin: '#a86b3c', hair: '#111111', hairStyle: 'bun', shirt: '#8e6bd8', pants: '#3a3a50' },
+  { skin: '#ffdbac', hair: '#d9a441', hairStyle: 'short', shirt: '#f2a33a', pants: '#4a4e69' },
+  { skin: '#ffe0bd', hair: '#e8c36a', hairStyle: 'long', shirt: '#46b5a6', pants: '#3b3355' },
+  { skin: '#8d5524', hair: '#1b1b1b', hairStyle: 'short', shirt: '#f4f4f4', pants: '#2b2d42' },
+];
+
 export const COWORKERS: Coworker[] = [
   {
     id: 'maya', name: 'Maya Chen', role: 'Product Designer', status: 'online', x: 3, y: 8, dir: 'down',

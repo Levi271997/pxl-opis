@@ -90,17 +90,32 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
   (status `todo|doing|review|done`, priority `high|med|low`, `source` local/monday,
   `external_ref`), `integrations` (OAuth tokens; RLS on with **no** policies, so it's
   server-only). RLS everywhere else via `is_member(workspace_id)`. A trigger creates
-  a profile on sign-up. `create_demo_workspace()` RPC creates a workspace for the
-  current user and seeds the demo team/projects/tasks (keys via `external_ref = 'demo:*'`).
+  a profile on sign-up.
+- **Teams** (migration `20261101000000_teams.sql`): `members.role` owner/admin/member,
+  `is_admin(ws)`; members are readable by the team, managed by admins, and you can
+  update your own row. Trigger `guard_members`: no moving members between
+  workspaces/accounts, only admins change roles, the owner can't be demoted or removed
+  (cascades and the SQL editor are let through). `invites` (token uuid; `email` null =
+  reusable link, set = for that address only; 14-day expiry; admins only via RLS).
+  RPCs: `accept_invite(token)` (used by `/join/[token]`), `ensure_workspace()` (accepts
+  pending email invites for your JWT email, returns `profiles.current_workspace_id`,
+  or creates an empty office: you as owner + "General" project). `create_demo_workspace()`
+  was dropped and the demo team deleted. Tested end to end in PGlite (scratch script).
   The owner has run it on their Supabase project and signed in with a magic link.
 - **Loading the office:** `app/page.tsx` calls `loadOffice()` (`lib/supabase/server.ts`):
-  `create_demo_workspace()` (returns the existing workspace after the first time), then
-  members/projects/tasks. `Office` converts the rows with `toOffice()`
+  `ensure_workspace()`, then members/projects/tasks. `Office` converts the rows with `toOffice()`
   (`lib/supabase/office.ts`) and calls the store's `load()` **before** the canvas mounts,
   browser only (the store is a module singleton, so never fill it on the server).
   Ids become uuids: coworker id = member id, `project` = project id, your own member
-  is still `'me'`, `Task.code` is the T-101 label. Only members with a desk and look
-  become NPCs. `updateTask` / `addTask` update the store first, then `saveTask` /
+  is still `'me'`, `Task.code` is the T-101 label. Every other member becomes an NPC:
+  saved desk, else the next free `DESK_SLOTS` entry; no look yet = a `STARTER_LOOKS` one.
+  `workspace.role` gates the team tools (`canManageTeam`).
+- **Joining:** `/join/[token]` (public in the middleware) accepts the invite when signed
+  in; when signed out it stores the token in the `pxl_invite` cookie and sends you to
+  `/login`; `app/page.tsx` redirects back to `/join/...` once you're signed in. The result
+  shows as a notice on the start screen (`?notice=`). Email invites:
+  `POST /api/invites/email` inserts the invite with the caller's session (RLS = admins
+  only), then `signInWithOtp` from a session-less client sends the email. `updateTask` / `addTask` update the store first, then `saveTask` /
   `insertTask`; on failure the change is rolled back. If loading fails, the server logs
   the error and the office falls back to the demo data.
 - **Email links:** use the token_hash template (`/auth/confirm`); custom SMTP (free
@@ -127,6 +142,8 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `components/ArcadePanel.tsx` | Arcade menu with best scores and team top 5, and the game screen (canvas 160×144 scaled up, keyboard input, pause, game over, posts the score) |
 | `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop), `race.ts` (Turbo Lane). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
 | `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql` and `20261030000000_arcade_race.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
+| `components/TeamManager.tsx` | "Manage team" modal (Team panel > Manage): members with roles, change role / remove, invite links (create, copy, cancel), email invites |
+| `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
 | `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, avatar picker, room sign, sprite portrait |
@@ -139,9 +156,8 @@ same width (currently 37; the map is 37×17). The rooms along the top row are Me
 Room (cols 1–8), Kitchen (10–17), Dining Room (19–26; the Kitchen connects to it
 through a doorway at col 18, rows 3–4) and Omar's Office (28–35), all rows 1–5. The
 open office is rows 7–15. Doors in row 6 are at cols 4–5, 13–14, 22–23 and 33–34.
-Player start is (17,13). If you move desks, update `COWORKERS` in `lib/data.ts` **and**
-add a migration that moves the `demo:*` members and replaces `create_demo_workspace()`
-(see `20261031000000_compact_office.sql`). The engine moves any NPC whose saved spot is
+Player start is (17,13). If you move desks, update `DESK_SLOTS` (real teammates) and
+`COWORKERS` (demo mode) in `lib/data.ts`. The engine moves any NPC whose saved spot is
 solid or off the map to the nearest free tile (`freeTileNear`).
 
 Legend: `#` wall, `.` wood, `,` carpet, `_` kitchen tile, `o` dining tile, `r` rug,
@@ -185,6 +201,8 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
 10. Turbo Lane, a top-down racing game, added to the arcade.
 11. Smaller office: map 53×21 → 37×17, all rooms and furniture kept, coworkers moved
     (migration `20261031000000_compact_office.sql` moves them in existing workspaces).
+12. Real teams: owner/admin/member roles, invite links and email invites, Manage team
+    panel; the demo team was removed (demo mode without Supabase still has it).
 
 Everything else still resets on reload: tasks, water, fridge stock.
 

@@ -46,19 +46,20 @@ export async function getAccount(): Promise<Account | null> {
   };
 }
 
-// The signed-in user's office. The first time, create_demo_workspace() gives
-// them a workspace filled with the demo team; after that it returns the same one.
-// Returns null (and the app falls back to the demo data) if anything fails.
+// The signed-in user's office. ensure_workspace() accepts any email invites
+// waiting for them, then returns their current workspace (creating an empty one
+// the first time). Returns null (and the app falls back to the demo data) if
+// anything fails.
 export async function loadOffice(account: Account): Promise<OfficeRows | null> {
   const supabase = await createClient();
-  const { data: workspaceId, error } = await supabase.rpc('create_demo_workspace');
+  const { data: workspaceId, error } = await supabase.rpc('ensure_workspace');
   if (error || !workspaceId) {
     console.error('Could not load the workspace:', error?.message);
     return null;
   }
 
   const [members, projects, tasks] = await Promise.all([
-    supabase.from('members').select('*').eq('workspace_id', workspaceId),
+    supabase.from('members').select('*').eq('workspace_id', workspaceId).order('created_at'),
     supabase.from('projects').select('*').eq('workspace_id', workspaceId).order('created_at'),
     supabase.from('tasks').select('*').eq('workspace_id', workspaceId).order('code'),
   ]);

@@ -15,7 +15,7 @@ const OPTIONS: { key: keyof Look; label: string; values: string[] }[] = [
 ];
 const PREVIEW_DIRS: Dir[] = ['down', 'left', 'up', 'right'];
 
-export default function StartScreen({ account }: { account: Account | null }) {
+export default function StartScreen({ account, notice }: { account: Account | null; notice: string | null }) {
   const [name, setName] = useState(account?.name ?? '');
   const [look, setLook] = useState<Look>(account?.look ?? DEFAULT_LOOK);
   const preview = useRef<HTMLCanvasElement>(null);
@@ -73,6 +73,7 @@ export default function StartScreen({ account }: { account: Account | null }) {
         <h1>Pxl Opis</h1>
         <p className="sub">Project management, but you walk to your desk.</p>
         {account && <p className="signed-in-as">Signed in as {account.email}</p>}
+        {notice && <p className="start-notice" role="status">{notice}</p>}
         <div className="start-grid">
           <div className="preview-box">
             <canvas id="start-preview" ref={preview} width={SPRITE_W} height={SPRITE_H} />

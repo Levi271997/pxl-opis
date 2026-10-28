@@ -29,14 +29,14 @@ Never put the **secret / service_role** key in a `NEXT_PUBLIC_` variable or in g
 2. Paste the whole of `supabase/migrations/20261028000000_init.sql` and click **Run**.
 
 That creates the tables (profiles, workspaces, members, projects, tasks,
-integrations), the security rules, and a `create_demo_workspace()` function that
-fills a new team's office with the demo coworkers and tasks.
+integrations) and the security rules.
 
 Then do the same, in order, with the other files in `supabase/migrations/`:
 `20261029000000_arcade_scores.sql` (the arcade leaderboard) and
 `20261030000000_arcade_race.sql` (lets the race game post scores), and
 `20261031000000_compact_office.sql` (moves the demo coworkers to their desks in the
-smaller office map). The games work without the arcade ones, but scores aren't shared.
+smaller office map), and `20261101000000_teams.sql` (real teams: roles, invites, and
+removes the demo team). The games work without the arcade ones, but scores aren't shared.
 
 (If you later install the Supabase CLI, `supabase link` and `supabase db push`
 apply the same file.)
@@ -128,9 +128,22 @@ Open <http://localhost:3000>. You should land on the sign-in page. Sign in with
 any method, pick your avatar, and enter the office. Your name and avatar are
 saved to your profile and come back the next time you sign in.
 
-The first time you sign in, the app creates your workspace and fills it with the
-demo team, projects and tasks (stored in your database, so you can change or
-delete them in **Table Editor**). Task changes you make in the office are saved.
+The first time you sign in, the app creates your office with just you in it (you
+are its **owner**) and a "General" project. Task changes you make are saved.
+
+## 7. Invite your team
+
+Open the Team list (**T**) and click **Manage**. As the owner or an admin you can:
+
+- **Create an invite link** and send it however you like. Anyone who opens it and
+  signs in joins your office. Links last 14 days; **Cancel** turns one off early.
+- **Invite by email.** The app emails them a sign-in link through your SMTP. When
+  they sign in with that address (email link, Google or Microsoft), they join
+  automatically.
+- **Change roles** (Member / Admin) and **remove** people. Nobody can remove or
+  demote the owner.
+
+New teammates get the next free desk in the office. Reload to see changes.
 
 ## What's next
 

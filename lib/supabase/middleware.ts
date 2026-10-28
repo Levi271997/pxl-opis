@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseConfigured } from './config';
 
-const PUBLIC_PATHS = ['/login', '/auth'];
+const PUBLIC_PATHS = ['/login', '/auth', '/join']; // /join handles signed-out visitors itself
 
 export async function updateSession(request: NextRequest) {
   if (!supabaseConfigured) return NextResponse.next({ request }); // demo mode

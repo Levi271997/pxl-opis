@@ -3,12 +3,13 @@
 // server.ts); the conversion runs in the browser so "due in N days" uses the
 // viewer's own calendar.
 
-import type { Coworker, Dir, Look, Presence, Priority, Project, StatusId, Task } from '../data';
+import { DESK_SLOTS, PLAYER_START, STARTER_LOOKS, type Coworker, type Dir, type Look, type Presence, type Priority, type Project, type StatusId, type Task } from '../data';
 import { createClient } from './client';
 
 export interface MemberRow {
   id: string;
   user_id: string | null;
+  role: MemberRole;
   display_name: string;
   role_title: string;
   presence: Presence;
@@ -50,7 +51,12 @@ export interface OfficeRows {
 export interface Workspace {
   id: string;
   meId: string; // the signed-in user's row in members
+  role: MemberRole; // the signed-in user's role
 }
+
+export type MemberRole = 'owner' | 'admin' | 'member';
+export const ROLE_LABELS: Record<MemberRole, string> = { owner: 'Owner', admin: 'Admin', member: 'Member' };
+export const canManageTeam = (ws: Workspace | null) => ws?.role === 'owner' || ws?.role === 'admin';
 
 export interface OfficeData {
   workspace: Workspace;
@@ -83,26 +89,30 @@ export function toOffice(rows: OfficeRows): OfficeData | null {
   const me = rows.members.find(m => m.user_id === rows.userId);
   if (!me) return null;
 
-  // Only people with a desk get walked around the office. Anyone else (e.g.
-  // synced from Monday.com later) still shows up on task cards.
-  const coworkers: Coworker[] = rows.members
-    .filter(m => m.id !== me.id && m.desk_x !== null && m.desk_y !== null && m.look)
-    .map(m => ({
+  // Teammates without a saved desk get the next free desk slot, in the order
+  // they joined; the engine nudges anyone left over to a free tile.
+  const others = rows.members.filter(m => m.id !== me.id);
+  const used = new Set(others.filter(m => m.desk_x !== null).map(m => `${m.desk_x},${m.desk_y}`));
+  const freeDesks = DESK_SLOTS.filter(d => !used.has(`${d.x},${d.y}`));
+  const coworkers: Coworker[] = others.map((m, i) => {
+    const desk = m.desk_x !== null && m.desk_y !== null ? { x: m.desk_x, y: m.desk_y } : freeDesks.shift() ?? PLAYER_START;
+    return {
       id: m.id,
       name: m.display_name,
-      role: m.role_title,
+      role: m.role_title || ROLE_LABELS[m.role],
       status: m.presence,
-      x: m.desk_x!,
-      y: m.desk_y!,
+      x: desk.x,
+      y: desk.y,
       dir: m.home_dir,
       wander: m.wander ?? undefined,
-      look: m.look!,
+      look: m.look ?? STARTER_LOOKS[i % STARTER_LOOKS.length],
       greeting: m.greeting.length ? m.greeting : [`Hi, I'm ${m.display_name}.`],
       blocker: m.blocker ?? 'Nothing blocking me right now.',
-    }));
+    };
+  });
 
   return {
-    workspace: { id: rows.workspaceId, meId: me.id },
+    workspace: { id: rows.workspaceId, meId: me.id, role: me.role },
     coworkers,
     projects: Object.fromEntries(rows.projects.map(p => [p.id, { name: p.name, color: p.color }])),
     tasks: rows.tasks.map(t => ({
