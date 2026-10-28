@@ -3,15 +3,17 @@
 import { useEffect } from 'react';
 import { getPerson, useOffice } from '@/lib/store';
 import { firstName } from '@/lib/tasks';
+import type { Account } from '@/lib/supabase/account';
 import ArcadePanel from './ArcadePanel';
 import Board from './Board';
+import CharacterSettings from './CharacterSettings';
 import BookshelfPanel from './BookshelfPanel';
 import FridgePanel from './FridgePanel';
 import PersonPanel from './PersonPanel';
 import StatusBoard from './StatusBoard';
 import TeamManager from './TeamManager';
 
-export default function ModalHost() {
+export default function ModalHost({ account }: { account: Account | null }) {
   const modal = useOffice(s => s.modal);
   const playerName = useOffice(s => s.player.name);
   const closeModal = useOffice(s => s.closeModal);
@@ -35,6 +37,7 @@ export default function ModalHost() {
     : modal.kind === 'bookshelf' ? 'Bookshelf'
     : modal.kind === 'arcade' ? 'Arcade'
     : modal.kind === 'manage-team' ? 'Manage team'
+    : modal.kind === 'character' ? 'Character'
     : modal.id === 'me' ? 'My tasks' : `${firstName(getPerson(modal.id, playerName).name)}'s desk`;
 
   return (
@@ -55,6 +58,7 @@ export default function ModalHost() {
           {modal.kind === 'bookshelf' && <BookshelfPanel />}
           {modal.kind === 'arcade' && <ArcadePanel />}
           {modal.kind === 'manage-team' && <TeamManager />}
+          {modal.kind === 'character' && <CharacterSettings account={account} />}
           {modal.kind === 'person' && <PersonPanel id={modal.id} />}
         </div>
       </div>

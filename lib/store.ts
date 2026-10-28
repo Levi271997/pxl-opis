@@ -20,7 +20,7 @@ export interface DialogRequest {
 }
 
 export type ModalRequest =
-  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'manage-team' } | { kind: 'person'; id: string };
+  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'manage-team' } | { kind: 'character' } | { kind: 'person'; id: string };
 
 type FoodCounts = Record<FoodId, number>;
 const foodCounts = (count: (id: FoodId) => number) =>
@@ -44,6 +44,7 @@ interface OfficeState {
 
   load: (office: OfficeData) => void;
   start: (name: string, look: Look) => void;
+  setPlayer: (name: string, look: Look) => void;
   drinkWater: () => number;
   takeFood: (id: FoodId) => void;
   putBackFood: (id: FoodId) => void;
@@ -78,6 +79,7 @@ export const useOffice = create<OfficeState>()((set, get) => ({
 
   load: ({ workspace, coworkers, projects, tasks }) => set({ workspace, coworkers, projects, tasks }),
   start: (name, look) => set({ started: true, player: { name, look } }),
+  setPlayer: (name, look) => set({ player: { name, look } }),
   drinkWater: () => {
     const cups = get().waterCups + 1;
     set({ waterCups: cups });

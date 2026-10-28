@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { savedPlayer } from '@/lib/player';
 import { useOffice } from '@/lib/store';
 import type { Account } from '@/lib/supabase/account';
 import { toOffice, type OfficeRows } from '@/lib/supabase/office';
@@ -29,6 +30,19 @@ export default function Office({ account, office, notice }: {
   const started = useOffice(s => s.started);
   const talking = useOffice(s => s.dialog !== null);
 
+  // Returning players skip the start screen and the tips. Decided after mount,
+  // because demo mode remembers you in localStorage, which the server can't see.
+  const [checked, setChecked] = useState(false);
+  useEffect(() => {
+    const saved = savedPlayer(account);
+    if (saved) {
+      const { start, openDialog } = useOffice.getState();
+      start(saved.name, saved.look);
+      if (notice) openDialog({ pages: [notice] });
+    }
+    setChecked(true);
+  }, [account, notice]);
+
   return (
     <>
       <GameCanvas />
@@ -41,8 +55,8 @@ export default function Office({ account, office, notice }: {
         </p>
       )}
       <DialogBox />
-      <ModalHost />
-      {!started && <StartScreen account={account} notice={notice} />}
+      <ModalHost account={account} />
+      {checked && !started && <StartScreen account={account} notice={notice} />}
     </>
   );
 }

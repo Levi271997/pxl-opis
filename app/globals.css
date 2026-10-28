@@ -22,7 +22,7 @@ html, body {
 }
 
 button { font: inherit; color: inherit; cursor: pointer; }
-canvas.portrait, #start-preview { image-rendering: pixelated; }
+canvas.portrait, .avatar-preview { image-rendering: pixelated; }
 
 #world { position: fixed; inset: 0; display: block; cursor: pointer; touch-action: none; }
 
@@ -621,7 +621,7 @@ kbd {
   background: #c79f74;
   border: 3px solid var(--ink);
 }
-#start-preview { width: 96px; height: 132px; }
+.avatar-preview { width: 96px; height: 132px; }
 .options { flex: 1; display: grid; gap: 6px; min-width: 0; }
 .opt-row { display: grid; gap: 6px; }
 .options label, .opt-label { font-family: var(--pixel); font-size: 8px; margin-top: 6px; }
@@ -703,3 +703,7 @@ kbd {
   .start-grid { flex-direction: column; align-items: center; }
   .preview-box { width: 100%; height: 150px; }
 }
+
+/* character settings */
+.character-settings .start-grid { margin-bottom: 14px; }
+.character-actions { display: flex; justify-content: flex-end; gap: 8px; }

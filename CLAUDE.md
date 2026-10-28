@@ -82,8 +82,13 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 - **Clients:** `lib/supabase/client.ts` (browser), `lib/supabase/server.ts`
   (server components/route handlers, plus `getAccount()`), `lib/supabase/account.ts`
   (the `Account` type passed from `app/page.tsx` → `Office` → `StartScreen`/`Hud`).
-- **Profile:** the start screen prefills the saved name and avatar from `profiles`, and
-  upserts them on "Enter the office". The HUD shows "Sign out" when signed in.
+- **Profile:** the start screen only shows on a first visit (signed in: no `profiles.look`
+  yet; demo mode: nothing in localStorage `pxl-opis:player`). Returning players are
+  started straight away by `Office` after mount (`savedPlayer` in `lib/player.ts`), with
+  no tips dialog; an invite notice then shows as a plain dialog. The HUD **Character**
+  button opens the `character` modal (`CharacterSettings`, same `CharacterEditor` as the
+  start screen) to change name/look; `savePlayer` writes `profiles` + your member row
+  (or localStorage in demo mode). The HUD shows "Sign out" when signed in.
 - **Schema:** `supabase/migrations/20261028000000_init.sql`: `profiles`, `workspaces`,
   `members` (everyone in the office, with desk position, look, greeting, blocker;
   `user_id` null for people without an account), `projects`, `tasks`
@@ -146,7 +151,8 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
-| `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, avatar picker, room sign, sprite portrait |
+| `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, first-visit start screen, room sign, sprite portrait |
+| `components/CharacterEditor.tsx`, `CharacterSettings.tsx`, `lib/player.ts` | Name + avatar picker with spinning preview; the Character modal; remembering/saving the player |
 | `app/globals.css` | All styles (retro pixel theme, fixed palette) |
 
 ## The office map
@@ -205,6 +211,7 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
     panel; the demo team was removed (demo mode without Supabase still has it).
 13. Inbox Invaders: shoot down waves of email (spam 20, urgent takes 2 hits), cardboard
     box cover, newsletter bonus, inbox-zero bonus per wave.
+14. Start screen and tips only on the first visit; Character settings in the HUD.
 
 Everything else still resets on reload: tasks, water, fridge stock.
 

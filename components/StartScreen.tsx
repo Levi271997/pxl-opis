@@ -1,68 +1,31 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { DEFAULT_LOOK, type Dir, type Look } from '@/lib/data';
-import { SPRITE_H, SPRITE_W, spritesFor } from '@/lib/game/sprites';
+import { useState } from 'react';
+import { DEFAULT_LOOK, type Look } from '@/lib/data';
+import { savePlayer } from '@/lib/player';
 import { useOffice } from '@/lib/store';
 import type { Account } from '@/lib/supabase/account';
-import { createClient } from '@/lib/supabase/client';
+import CharacterEditor from './CharacterEditor';
 
-const OPTIONS: { key: keyof Look; label: string; values: string[] }[] = [
-  { key: 'skin', label: 'Skin', values: ['#ffdbac', '#e8b58a', '#c68642', '#8d5524'] },
-  { key: 'hair', label: 'Hair', values: ['#5a3825', '#1a1a1a', '#e8c36a', '#b5452b', '#8e6bd8'] },
-  { key: 'hairStyle', label: 'Style', values: ['short', 'long', 'bun', 'spiky'] },
-  { key: 'shirt', label: 'Shirt', values: ['#3fb27f', '#5b8def', '#e0679b', '#f2a33a', '#8e6bd8', '#d64545'] },
-];
-const PREVIEW_DIRS: Dir[] = ['down', 'left', 'up', 'right'];
-
+// Only shown on your first visit: pick a name and avatar. After that you go
+// straight into the office, and can change them under Character.
 export default function StartScreen({ account, notice }: { account: Account | null; notice: string | null }) {
   const [name, setName] = useState(account?.name ?? '');
   const [look, setLook] = useState<Look>(account?.look ?? DEFAULT_LOOK);
-  const preview = useRef<HTMLCanvasElement>(null);
-
-  // Spin the avatar through all four directions with a walk cycle.
-  useEffect(() => {
-    const g = preview.current!.getContext('2d')!;
-    const sprites = spritesFor(look);
-    let tick = 0;
-    const draw = () => {
-      const dir = PREVIEW_DIRS[Math.floor(tick / 8) % 4];
-      g.clearRect(0, 0, SPRITE_W, SPRITE_H);
-      g.drawImage(sprites[dir][[1, 0, 2, 0][tick % 4]], 0, 0);
-      tick++;
-    };
-    draw();
-    const timer = setInterval(draw, 150);
-    return () => clearInterval(timer);
-  }, [look]);
 
   const enter = (e: React.FormEvent) => {
     e.preventDefault();
     const playerName = name.trim() || 'You';
     const { start, openDialog, workspace } = useOffice.getState();
     start(playerName, look);
-    if (account) {
-      // Remember the avatar for next time. Not awaited: the office opens straight away.
-      const supabase = createClient();
-      supabase
-        .from('profiles')
-        .upsert({ id: account.id, display_name: playerName, look })
-        .then(({ error }) => { if (error) console.warn('Could not save profile:', error.message); });
-      // Teammates see this name (e.g. on the arcade leaderboard).
-      if (workspace) {
-        supabase
-          .from('members')
-          .update({ display_name: playerName, look })
-          .eq('id', workspace.meId)
-          .then(({ error }) => { if (error) console.warn('Could not update your member name:', error.message); });
-      }
-    }
+    savePlayer({ name: playerName, look }, account, workspace);
     openDialog({
       speaker: 'TIP',
       pages: [
         `Welcome to the office, ${playerName}!`,
         'Walk up to a coworker and press E to see what they are working on.',
         'The whiteboard in the Meeting Room opens the project board. Press ? for all controls.',
+        'You can change your name and look any time under Character.',
       ],
     });
   };
@@ -74,40 +37,7 @@ export default function StartScreen({ account, notice }: { account: Account | nu
         <p className="sub">Project management, but you walk to your desk.</p>
         {account && <p className="signed-in-as">Signed in as {account.email}</p>}
         {notice && <p className="start-notice" role="status">{notice}</p>}
-        <div className="start-grid">
-          <div className="preview-box">
-            <canvas id="start-preview" ref={preview} width={SPRITE_W} height={SPRITE_H} />
-          </div>
-          <div className="options">
-            <label htmlFor="start-name">Your name</label>
-            <input
-              id="start-name" type="text" maxLength={14} placeholder="e.g. Levi" autoComplete="off" autoFocus
-              value={name} onChange={e => setName(e.target.value)}
-            />
-            {OPTIONS.map(({ key, label, values }) => (
-              <div key={key} className="opt-row">
-                <span className="opt-label">{label}</span>
-                <div className="swatches">
-                  {values.map(v => {
-                    const text = key === 'hairStyle';
-                    return (
-                      <button
-                        key={v}
-                        type="button"
-                        aria-label={`${label} ${v}`}
-                        className={`swatch${text ? ' text' : ''}${look[key] === v ? ' active' : ''}`}
-                        style={text ? undefined : { background: v }}
-                        onClick={() => setLook(l => ({ ...l, [key]: v }))}
-                      >
-                        {text ? v : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CharacterEditor name={name} look={look} onName={setName} onLook={setLook} autoFocus />
         <button className="pixel-btn big" type="submit">Enter the office ▶</button>
       </form>
     </div>
