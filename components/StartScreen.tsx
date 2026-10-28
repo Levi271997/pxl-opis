@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { DEFAULT_LOOK, type Dir, type Look } from '@/lib/data';
 import { SPRITE_H, SPRITE_W, spritesFor } from '@/lib/game/sprites';
 import { useOffice } from '@/lib/store';
+import type { Account } from '@/lib/supabase/account';
+import { createClient } from '@/lib/supabase/client';
 
 const OPTIONS: { key: keyof Look; label: string; values: string[] }[] = [
   { key: 'skin', label: 'Skin', values: ['#ffdbac', '#e8b58a', '#c68642', '#8d5524'] },
@@ -13,9 +15,9 @@ const OPTIONS: { key: keyof Look; label: string; values: string[] }[] = [
 ];
 const PREVIEW_DIRS: Dir[] = ['down', 'left', 'up', 'right'];
 
-export default function StartScreen() {
-  const [name, setName] = useState('');
-  const [look, setLook] = useState<Look>(DEFAULT_LOOK);
+export default function StartScreen({ account }: { account: Account | null }) {
+  const [name, setName] = useState(account?.name ?? '');
+  const [look, setLook] = useState<Look>(account?.look ?? DEFAULT_LOOK);
   const preview = useRef<HTMLCanvasElement>(null);
 
   // Spin the avatar through all four directions with a walk cycle.
@@ -39,6 +41,13 @@ export default function StartScreen() {
     const playerName = name.trim() || 'You';
     const { start, openDialog } = useOffice.getState();
     start(playerName, look);
+    if (account) {
+      // Remember the avatar for next time. Not awaited: the office opens straight away.
+      createClient()
+        .from('profiles')
+        .upsert({ id: account.id, display_name: playerName, look })
+        .then(({ error }) => { if (error) console.warn('Could not save profile:', error.message); });
+    }
     openDialog({
       speaker: 'TIP',
       pages: [
@@ -54,6 +63,7 @@ export default function StartScreen() {
       <form className="start-card" onSubmit={enter}>
         <h1>Pxl Opis</h1>
         <p className="sub">Project management, but you walk to your desk.</p>
+        {account && <p className="signed-in-as">Signed in as {account.email}</p>}
         <div className="start-grid">
           <div className="preview-box">
             <canvas id="start-preview" ref={preview} width={SPRITE_W} height={SPRITE_H} />

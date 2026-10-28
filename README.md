@@ -11,6 +11,10 @@ npm run dev     # then open http://localhost:3000
 
 Production build: `npm run build && npm start`.
 
+Without Supabase keys the app runs in **demo mode** (no sign-in, static data).
+To turn on sign-in (Google, Microsoft, email link) and the database, follow
+[docs/SUPABASE.md](docs/SUPABASE.md).
+
 ## How it's organised
 
 | Path | What it is |

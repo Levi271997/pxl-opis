@@ -531,6 +531,58 @@ kbd {
 .swatch.text { width: auto; padding: 0 8px; background: #fff; font-size: 18px; }
 .swatch.active { outline: 3px solid var(--accent); outline-offset: 2px; }
 
+.signed-in-as { margin: -10px 0 16px; color: #6b6585; font-size: 17px; }
+
+/* ---------- sign-in page ---------- */
+
+.login-card { width: min(440px, 100%); }
+.login-buttons { display: grid; gap: 10px; }
+.login-btn { justify-content: center; padding: 13px 14px; }
+.pixel-btn:disabled { opacity: .6; cursor: wait; }
+.login-logo {
+  width: 16px;
+  height: 16px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.login-logo.google {
+  font-family: var(--pixel);
+  font-size: 11px;
+  color: #fff;
+  background: #4f7fe0;
+}
+.login-logo.microsoft { grid-template-columns: 1fr 1fr; gap: 1px; }
+.login-logo.microsoft i { width: 7px; height: 7px; display: block; }
+.login-logo.microsoft i:nth-child(1) { background: #f25022; }
+.login-logo.microsoft i:nth-child(2) { background: #7fba00; }
+.login-logo.microsoft i:nth-child(3) { background: #00a4ef; }
+.login-logo.microsoft i:nth-child(4) { background: #ffb900; }
+.login-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  color: #6b6585;
+}
+.login-or::before, .login-or::after { content: ""; flex: 1; border-top: 2px dashed #d8ccaf; }
+.login-email { display: grid; gap: 8px; text-align: left; }
+.login-email label { font-family: var(--pixel); font-size: 8px; }
+.login-email input {
+  font: inherit;
+  font-size: 22px;
+  border: 3px solid var(--ink);
+  padding: 4px 8px;
+  background: #fff;
+}
+.login-email .pixel-btn { justify-content: center; margin-top: 6px; }
+.login-note { text-align: left; line-height: 1.2; }
+.login-note code { font-size: 17px; background: var(--paper-2); padding: 0 4px; }
+.login-note a { color: var(--accent); }
+.login-status { margin: 16px 0 0; padding: 8px 10px; border: 3px solid var(--ink); text-align: left; }
+.login-status.sent { background: #e3f4ea; }
+.login-status.error { background: #fde2e2; }
+
 /* ---------- small screens ---------- */
 
 @media (max-width: 640px) {

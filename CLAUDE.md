@@ -2,8 +2,12 @@
 
 A project-management web app with a game-like UI: you walk a pixel-art character
 around a retro top-down office (Gather.town / old-Pokemon style) and go to coworkers
-to see and manage their tasks. All data is static demo data for now. There is
-no database or backend yet.
+to see and manage their tasks.
+
+**Direction:** make everything dynamic with **Supabase** (auth + Postgres + Realtime)
+and sync tasks from **Monday.com** (first PM tool to integrate). Sign-in methods:
+**Google, Microsoft, email magic link**. Sign-in and the database schema exist; the
+office itself still runs on static data from `lib/data.ts` (see "Supabase" below).
 
 Repo: https://github.com/Levi271997/pxl-opis (branch `main`).
 
@@ -29,7 +33,8 @@ npm run dev          # http://localhost:3000
 npx tsc --noEmit     # type-check (the scripts include "typecheck")
 ```
 
-Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Zustand 5.
+Stack: Next.js 15 (App Router), React 19, TypeScript (strict), Zustand 5,
+Supabase (`@supabase/supabase-js` + `@supabase/ssr`).
 Fonts come from `next/font/google` (Press Start 2P + VT323) and are exposed as
 CSS vars `--font-pixel` / `--font-retro`. The canvas reads `--font-pixel` too.
 
@@ -58,6 +63,36 @@ own `keydown` listeners on `window`, and the engine ignores keys outside `play`
 **Zustand gotcha:** never write a selector that returns a new array or object
 (e.g. `useOffice(s => s.tasks.filter(...))`), because it loops forever with
 `useSyncExternalStore`. Select `s.tasks`, then filter or `useMemo` in the component.
+
+## Supabase
+
+Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
+(template: `.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+(publishable key). The secret key must never be `NEXT_PUBLIC_` or committed.
+
+- **Demo mode:** if those env vars are missing, `supabaseConfigured` is false, the
+  middleware lets everything through, `getAccount()` returns null, and the app
+  behaves exactly as before (static data, no sign-in). Keep this working.
+- **Auth flow:** `/login` (`components/LoginCard.tsx`) calls `signInWithOAuth`
+  (`google`, `azure` with `scopes: 'email'`) or `signInWithOtp` (magic link), all
+  redirecting to `/auth/callback` (`app/auth/callback/route.ts`), which exchanges the
+  code for a session cookie. `middleware.ts` → `lib/supabase/middleware.ts` refreshes
+  the session (`getClaims()`) and redirects signed-out users to `/login`.
+- **Clients:** `lib/supabase/client.ts` (browser), `lib/supabase/server.ts`
+  (server components/route handlers, plus `getAccount()`), `lib/supabase/account.ts`
+  (the `Account` type passed from `app/page.tsx` → `Office` → `StartScreen`/`Hud`).
+- **Profile:** the start screen prefills the saved name and avatar from `profiles`, and
+  upserts them on "Enter the office". The HUD shows "Sign out" when signed in.
+- **Schema:** `supabase/migrations/20261028000000_init.sql`: `profiles`, `workspaces`,
+  `members` (everyone in the office, with desk position, look, greeting, blocker;
+  `user_id` null for people without an account), `projects`, `tasks`
+  (status `todo|doing|review|done`, priority `high|med|low`, `source` local/monday,
+  `external_ref`), `integrations` (OAuth tokens; RLS on with **no** policies, so it's
+  server-only). RLS everywhere else via `is_member(workspace_id)`. A trigger creates
+  a profile on sign-up. `create_demo_workspace()` RPC creates a workspace for the
+  current user and seeds the demo team/projects/tasks (keys via `external_ref = 'demo:*'`).
+  The SQL was syntax-checked with the Postgres parser but has **not yet been run on a
+  real Supabase project**: expect to fix small issues the first time it runs.
 
 ## File map
 
@@ -116,7 +151,11 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
    eggs, milk, Tom's lunchbox (locked). Take/Put back via a lunch bag, then eat
    at a dining table.
 
-Everything resets on reload: tasks, water, fridge stock.
+5. Supabase foundation: sign-in page (Google, Microsoft, magic link), auth callback,
+   session middleware, saved profile (name + avatar), Sign out, database schema with
+   RLS and a demo-workspace seeding function, setup guide. Demo mode still works.
+
+Everything else still resets on reload: tasks, water, fridge stock.
 
 ## Testing approach used so far
 
@@ -127,11 +166,24 @@ check DOM text (`#zone-name`, `#dialog-text`, `#modal-title`, `.water`) plus
 screenshots. Plan routes around NPCs: Maya, Jordan, Priya and Sam stand in row 10,
 Alex and Lena in row 14. Row 16 is clear.
 
-## Ideas / possible next steps
+## Next steps (agreed plan)
 
-- Backend + database (e.g. Supabase/Postgres): replace `INITIAL_TASKS` and the
-  task actions in the store with API calls, plus auth.
-- Real-time multiplayer (WebSockets / Colyseus) so real coworkers walk around.
+1. Owner creates the Supabase project, fills `.env.local`, runs the migration, and
+   turns on Google/Microsoft (see `docs/SUPABASE.md`).
+2. Load the office from Supabase: on first visit call `create_demo_workspace()`,
+   then load members/projects/tasks into the store instead of `lib/data.ts`
+   (`Task.project` / `assignee` become uuids; the engine must create NPCs from loaded
+   members, possibly after the async load). Task changes write to the `tasks` table.
+3. Realtime: subscribe to `tasks` changes; use Realtime **Presence** for real
+   online status and to show other signed-in players walking around.
+4. Monday.com integration: OAuth connect flow in Next.js route handlers, tokens in
+   `integrations` (server-only, secret key), sync boards → projects, items → tasks,
+   people → members, map Monday status columns to the 4 statuses, webhooks for updates.
+
+## Other ideas
+
+- Custom character art: sprite sheet PNGs (16×22 frames, rows down/up/left/right,
+  3 columns) loaded into the same `Sprites` shape, optionally stored in Supabase Storage.
 - Move the world to Phaser 3 or PixiJS with a Tiled map and real sprite sheets
   once there are art assets.
 - Save small per-user things (avatar, water count) in localStorage.
