@@ -1,5 +1,6 @@
 import { createBlocks } from './blocks';
 import { createBreakout } from './breakout';
+import { createInvaders } from './invaders';
 import { createRace } from './race';
 import { createSnake } from './snake';
 import type { GameDef, GameId } from './types';
@@ -24,6 +25,11 @@ export const GAMES: GameDef[] = [
     id: 'race', title: 'Turbo Lane', color: '#d64545', create: createRace,
     blurb: 'Weave through traffic and grab coffee for bonus points. Three crashes and you are out.',
     controls: 'Left / right to steer · Up to speed up · Down to brake',
+  },
+  {
+    id: 'invaders', title: 'Inbox Invaders', color: '#d4508a', create: createInvaders,
+    blurb: 'Emails march toward your desk. Spam is worth more, urgent mail takes two hits. Reach inbox zero!',
+    controls: 'Left / right to move · Space to fire · Hide behind the boxes',
   },
 ];
 

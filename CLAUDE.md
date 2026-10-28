@@ -140,8 +140,8 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `components/StatusBoard.tsx` | Team status board: everyone's presence, current task, counts |
 | `components/FridgePanel.tsx` / `FoodIcon.tsx` | Fridge contents, Take/Put back, lunch bag |
 | `components/ArcadePanel.tsx` | Arcade menu with best scores and team top 5, and the game screen (canvas 160×144 scaled up, keyboard input, pause, game over, posts the score) |
-| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop), `race.ts` (Turbo Lane). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
-| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql` and `20261030000000_arcade_race.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
+| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop), `race.ts` (Turbo Lane), `invaders.ts` (Inbox Invaders). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
+| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql`, `20261030000000_arcade_race.sql` and `20261102000000_arcade_invaders.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
 | `components/TeamManager.tsx` | "Manage team" modal (Team panel > Manage): members with roles, change role / remove, invite links (create, copy, cancel), email invites |
 | `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
@@ -203,6 +203,8 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
     (migration `20261031000000_compact_office.sql` moves them in existing workspaces).
 12. Real teams: owner/admin/member roles, invite links and email invites, Manage team
     panel; the demo team was removed (demo mode without Supabase still has it).
+13. Inbox Invaders: shoot down waves of email (spam 20, urgent takes 2 hits), cardboard
+    box cover, newsletter bonus, inbox-zero bonus per wave.
 
 Everything else still resets on reload: tasks, water, fridge stock.
 
