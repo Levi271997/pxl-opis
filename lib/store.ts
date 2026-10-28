@@ -19,7 +19,8 @@ export interface DialogRequest {
   onClose?: () => void;
 }
 
-export type ModalRequest = { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'person'; id: string };
+export type ModalRequest =
+  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'person'; id: string };
 
 type FoodCounts = Record<FoodId, number>;
 const foodCounts = (count: (id: FoodId) => number) =>

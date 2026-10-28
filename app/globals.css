@@ -484,6 +484,49 @@ kbd {
 .bag li span { flex: 1; }
 .fridge-tip { margin: 14px 0 0; color: #6b6585; font-size: 18px; }
 
+/* bookshelf */
+.books {
+  display: grid;
+  gap: 8px;
+  background: #8a5a35;
+  border: 3px solid var(--ink);
+  box-shadow: inset 0 0 0 3px #a8744a;
+  padding: 10px;
+}
+.book {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-bottom-width: 4px;
+  padding: 6px 8px 6px 0;
+}
+.book-spine { align-self: stretch; width: 14px; flex: none; background: var(--c); border-right: 2px solid var(--ink); margin: -6px 0; }
+.book-info { flex: 1; min-width: 0; display: grid; line-height: 1.05; gap: 2px; }
+.book-info strong { font-weight: normal; font-size: 21px; }
+.book-info span { font-size: 16px; color: #6b6585; }
+.book-info .book-author { color: var(--ink); font-size: 17px; }
+
+.reader { display: grid; gap: 12px; }
+.reader-head { display: flex; align-items: center; gap: 12px; border-left: 8px solid var(--c); padding-left: 10px; }
+.reader-head div { display: grid; line-height: 1.05; }
+.reader-head strong { font-weight: normal; font-size: 22px; }
+.reader-head span { font-size: 17px; color: #6b6585; }
+.reader-page {
+  height: min(52vh, 460px);
+  overflow: auto;
+  background: #fffbf0;
+  border: 3px solid var(--ink);
+  padding: 14px 18px;
+  font-size: 21px;
+  line-height: 1.3;
+}
+.reader-page p { margin: 0 0 12px; }
+.reader-page p.verse { white-space: pre-wrap; }
+.reader-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--pixel); font-size: 9px; }
+.reader-nav button:disabled { opacity: .4; cursor: not-allowed; }
+
 /* ---------- start screen ---------- */
 
 #start {

@@ -18,7 +18,7 @@ const KEY_DIRS: Record<string, Dir> = {
   arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
 };
 // Objects that get an "E" prompt when you face them.
-const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team', C: 'Drink', f: 'Open' };
+const HIGHLIGHT: Record<string, string> = { W: 'Board', N: 'Read', K: 'Coffee', U: 'Team', C: 'Drink', f: 'Open', b: 'Books' };
 const DRINK_TIME = 1.6; // seconds the drinking animation lasts
 // Pixel water drop shown above your head while drinking (k outline, b blue, w shine).
 const DROP = ['...k...', '..kbk..', '.kbbbk.', 'kbwbbbk', 'kbwbbbk', 'kbbbbbk', '.kbbbk.', '..kkk..'];
@@ -125,7 +125,7 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     h: () => say(['A dining chair. Lunch break is the best meeting of the day.']),
     N: () => say(ANNOUNCEMENTS, 'NOTICE BOARD'),
     K: () => say(['*brrrzzzt*', 'You brew a fresh cup of coffee. Focus +10!'], 'COFFEE'),
-    b: () => say(['The team wiki: Design System, API Docs, Brand Guide, Onboarding.', 'One day these will be real links.'], 'BOOKSHELF'),
+    b: () => ui().openModal({ kind: 'bookshelf' }),
     f: (x, y) => { openFridge = { x, y }; ui().openModal({ kind: 'fridge' }); },
     t: () => say(['Next meeting here: Sprint 14 Review, Thursday 2:00 PM.'], 'MEETING TABLE'),
     s: () => say(['You sit for a moment. Ahh. Back to work!']),

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { getPerson, useOffice } from '@/lib/store';
 import { firstName } from '@/lib/tasks';
 import Board from './Board';
+import BookshelfPanel from './BookshelfPanel';
 import FridgePanel from './FridgePanel';
 import PersonPanel from './PersonPanel';
 import StatusBoard from './StatusBoard';
@@ -29,6 +30,7 @@ export default function ModalHost() {
   const heading = modal.kind === 'board' ? 'Project board'
     : modal.kind === 'status' ? 'Team status'
     : modal.kind === 'fridge' ? 'Fridge'
+    : modal.kind === 'bookshelf' ? 'Bookshelf'
     : modal.id === 'me' ? 'My tasks' : `${firstName(getPerson(modal.id, playerName).name)}'s desk`;
 
   return (
@@ -46,6 +48,7 @@ export default function ModalHost() {
           {modal.kind === 'board' && <Board />}
           {modal.kind === 'status' && <StatusBoard />}
           {modal.kind === 'fridge' && <FridgePanel />}
+          {modal.kind === 'bookshelf' && <BookshelfPanel />}
           {modal.kind === 'person' && <PersonPanel id={modal.id} />}
         </div>
       </div>
