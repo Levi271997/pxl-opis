@@ -1,7 +1,19 @@
 # Plan: Claude bots in the office
 
-Status: **idea, not started.** Discussed 2026-10-29. Nothing is built yet; decide
-the open questions below first.
+Status: **milestone 1 built** (2026-10-29): chat with bots. Milestones 2 and 3 are
+not started. The checkpoint before any bot code is the git tag `before-claude-bots`.
+
+## Build log
+
+- **Milestone 1, done:** one starter bot (Ada) per office, private chats saved in
+  Supabase (`bot_messages`), streaming replies from `/api/bots/[id]/chat`, daily
+  message cap per person (`BOT_DAILY_LIMIT`, default 50), Bot badge and Chat button
+  on the Team list and Status board. Migration `20261106000000_bots.sql`.
+  Decisions: private chats; Claude Opus 5.5 at low effort for chat, with server-side
+  refusal fallbacks; bots sit in Omar's office (`BOT_SLOTS`).
+- **Milestone 2, next:** tools for the board (list, create, update tasks) running as
+  the signed-in user, with a confirm step in the chat before any change.
+- **Milestone 3:** admins create and edit bots in Manage team; usage per person.
 
 ## The idea
 

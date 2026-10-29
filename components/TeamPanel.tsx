@@ -2,7 +2,7 @@
 
 import { PRESENCE } from '@/lib/data';
 import { engineRef } from '@/lib/game/engine';
-import { getPerson, useOffice } from '@/lib/store';
+import { getPerson, isBot, useOffice } from '@/lib/store';
 import Portrait from './Portrait';
 
 export default function TeamPanel() {
@@ -36,10 +36,12 @@ export default function TeamPanel() {
                   <i className="dot" style={{ background: PRESENCE[p.status].color }} />
                   {p.id === 'me' ? `${p.name} (you)` : p.name}
                 </strong>
-                <span>{p.role} · {openCount} open</span>
+                <span>{p.role} · {isBot(p.id) ? <span className="bot-badge">Bot</span> : `${openCount} open`}</span>
               </div>
               <div className="member-actions">
-                <button className="mini-btn" onClick={() => openModal({ kind: 'person', id: p.id })}>Tasks</button>
+                {isBot(p.id)
+                  ? <button className="mini-btn" onClick={() => openModal({ kind: 'bot', id: p.id })}>Chat</button>
+                  : <button className="mini-btn" onClick={() => openModal({ kind: 'person', id: p.id })}>Tasks</button>}
                 {p.id !== 'me' && (
                   <button className="mini-btn" onClick={() => engineRef.current?.walkToPerson(p.id)}>Go</button>
                 )}

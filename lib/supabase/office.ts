@@ -3,7 +3,7 @@
 // server.ts); the conversion runs in the browser so "due in N days" uses the
 // viewer's own calendar.
 
-import { DESK_SLOTS, PLAYER_START, STARTER_LOOKS, type Coworker, type Dir, type Look, type Presence, type Priority, type Project, type StatusId, type Task } from '../data';
+import { BOT_SLOTS, DESK_SLOTS, PLAYER_START, STARTER_LOOKS, type Coworker, type Dir, type Look, type Presence, type Priority, type Project, type StatusId, type Task } from '../data';
 import { createClient } from './client';
 
 export interface MemberRow {
@@ -20,6 +20,16 @@ export interface MemberRow {
   wander: Coworker['wander'] | null;
   greeting: string[];
   blocker: string | null;
+}
+
+export interface BotRow {
+  id: string;
+  name: string;
+  role_title: string;
+  greeting: string;
+  look: Look | null;
+  desk_x: number | null;
+  desk_y: number | null;
 }
 
 export interface ProjectRow {
@@ -45,6 +55,7 @@ export interface OfficeRows {
   members: MemberRow[];
   projects: ProjectRow[];
   tasks: TaskRow[];
+  bots: BotRow[];
 }
 
 // What the store needs to talk to the database. null in demo mode.
@@ -85,6 +96,27 @@ function dateIn(days: number) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// Bots sit in the AI corner unless they have a saved spot. They don't wander.
+function toBots(bots: BotRow[]): Coworker[] {
+  const free = BOT_SLOTS.slice();
+  return bots.map((b, i) => {
+    const spot = b.desk_x !== null && b.desk_y !== null ? { x: b.desk_x, y: b.desk_y } : free.shift() ?? PLAYER_START;
+    return {
+      id: b.id,
+      name: b.name,
+      role: b.role_title,
+      status: 'online',
+      x: spot.x,
+      y: spot.y,
+      dir: 'down',
+      look: b.look ?? STARTER_LOOKS[i % STARTER_LOOKS.length],
+      greeting: [b.greeting],
+      blocker: '',
+      bot: true,
+    };
+  });
+}
+
 export function toOffice(rows: OfficeRows): OfficeData | null {
   const me = rows.members.find(m => m.user_id === rows.userId);
   if (!me) return null;
@@ -113,7 +145,7 @@ export function toOffice(rows: OfficeRows): OfficeData | null {
 
   return {
     workspace: { id: rows.workspaceId, meId: me.id, role: me.role },
-    coworkers,
+    coworkers: [...coworkers, ...toBots(rows.bots)],
     projects: Object.fromEntries(rows.projects.map(p => [p.id, { name: p.name, color: p.color }])),
     tasks: rows.tasks.map(t => ({
       id: t.id,

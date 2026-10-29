@@ -367,6 +367,11 @@ export function createEngine(canvas: HTMLCanvasElement): Engine {
     const person = ui().coworkers.find(c => c.id === npc.id)!;
     const speaker = firstName(person.name).toUpperCase();
     cancelPath();
+    if (person.bot) {
+      npc.dir = dirBetween(npc, player);
+      ui().openModal({ kind: 'bot', id: npc.id });
+      return;
+    }
     npc.talking = true;
     npc.dir = dirBetween(npc, player);
     const tasks = ui().tasks.filter(t => t.assignee === npc.id);

@@ -2,7 +2,7 @@
 
 import { PRESENCE, type Presence } from '@/lib/data';
 import { engineRef } from '@/lib/game/engine';
-import { getPerson, useOffice } from '@/lib/store';
+import { getPerson, isBot, useOffice } from '@/lib/store';
 import { byPriority, firstName } from '@/lib/tasks';
 import Portrait from './Portrait';
 import type { CSSVars } from './TaskCard';
@@ -42,23 +42,25 @@ export default function StatusBoard() {
                 <Portrait id={p.id} className="portrait mid" />
                 <div className="status-who">
                   <strong>{p.id === 'me' ? `${p.name} (you)` : p.name}</strong>
-                  <span>{p.role}</span>
+                  <span>{p.role}{isBot(p.id) && <> · <span className="bot-badge">Bot</span></>}</span>
                 </div>
                 <span className="status-light" title={presence.label}>{presence.label}</span>
               </header>
               <p className="working-on">
                 <span>Working on</span>
-                {doing.length ? doing[0].title : <em>Nothing in progress</em>}
+                {isBot(p.id) ? <em>Ready to help. Walk over and press E.</em> : doing.length ? doing[0].title : <em>Nothing in progress</em>}
                 {doing.length > 1 && <small> +{doing.length - 1} more</small>}
               </p>
-              <div className="status-counts">
+              {!isBot(p.id) && <div className="status-counts">
                 <span><b>{count('todo')}</b> to do</span>
                 <span><b>{count('doing')}</b> doing</span>
                 <span><b>{count('review')}</b> review</span>
                 <span><b>{count('done')}</b> done</span>
-              </div>
+              </div>}
               <div className="status-actions">
-                <button className="mini-btn" onClick={() => openModal({ kind: 'person', id: p.id })}>Tasks</button>
+                {isBot(p.id)
+                  ? <button className="mini-btn" onClick={() => openModal({ kind: 'bot', id: p.id })}>Chat</button>
+                  : <button className="mini-btn" onClick={() => openModal({ kind: 'person', id: p.id })}>Tasks</button>}
                 {p.id !== 'me' && (
                   <button
                     className="mini-btn"

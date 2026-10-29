@@ -20,7 +20,7 @@ export interface DialogRequest {
 }
 
 export type ModalRequest =
-  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'manage-team' } | { kind: 'character' } | { kind: 'person'; id: string };
+  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'manage-team' } | { kind: 'character' } | { kind: 'person'; id: string } | { kind: 'bot'; id: string };
 
 type FoodCounts = Record<FoodId, number>;
 const foodCounts = (count: (id: FoodId) => number) =>
@@ -145,6 +145,9 @@ export function getPerson(id: string, playerName: string): Person {
   if (id === 'me') return { id: 'me', name: playerName, role: 'You', status: 'online' };
   return coworker(id) ?? { ...UNKNOWN, id };
 }
+
+// Claude bots get a chat instead of a task list.
+export const isBot = (id: string) => coworker(id)?.bot === true;
 
 export function lookOf(id: string, playerLook: Look): Look {
   return id === 'me' ? playerLook : coworker(id)?.look ?? DEFAULT_LOOK;

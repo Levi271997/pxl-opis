@@ -707,3 +707,30 @@ kbd {
 /* character settings */
 .character-settings .start-grid { margin-bottom: 14px; }
 .character-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* bot chat */
+/* Doubled class so it wins over the text styles of the rows it sits in. */
+.bot-badge.bot-badge { display: inline-block; font-family: var(--pixel); font-size: 7px; line-height: 1; padding: 3px 4px; background: #5b8def; color: #fff; vertical-align: middle; }
+.bot-chat { display: grid; gap: 10px; }
+.bot-head { display: flex; align-items: center; gap: 12px; }
+.bot-head div { flex: 1; display: grid; line-height: 1.1; }
+.bot-head strong { font-family: var(--pixel); font-size: 12px; font-weight: normal; }
+.bot-head span { color: #6b6585; font-size: 17px; }
+.bot-log {
+  height: min(46vh, 420px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #fff;
+  border: 3px solid var(--ink);
+}
+.bot-line { margin: 0; max-width: 85%; padding: 6px 10px; font-size: 19px; line-height: 1.25; white-space: pre-wrap; overflow-wrap: anywhere; border: 2px solid var(--ink); }
+.bot-line.assistant { align-self: flex-start; background: #eef3ff; }
+.bot-line.user { align-self: flex-end; background: #e9f7ee; }
+.bot-typing { color: #6b6585; }
+.bot-note { margin: 0; padding: 6px 10px; border: 2px solid var(--ink); background: #fff4e5; font-size: 17px; }
+.bot-input { display: flex; gap: 8px; align-items: stretch; }
+.bot-input textarea { flex: 1; font: inherit; font-size: 19px; border: 3px solid var(--ink); padding: 4px 8px; resize: vertical; min-height: 48px; }
+.bot-meta { margin: 0; color: #6b6585; font-size: 16px; }

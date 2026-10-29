@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import type { Look } from '../data';
 import type { Account } from './account';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseConfigured } from './config';
-import type { MemberRow, OfficeRows, ProjectRow, TaskRow } from './office';
+import type { BotRow, MemberRow, OfficeRows, ProjectRow, TaskRow } from './office';
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -58,10 +58,11 @@ export async function loadOffice(account: Account): Promise<OfficeRows | null> {
     return null;
   }
 
-  const [members, projects, tasks] = await Promise.all([
+  const [members, projects, tasks, bots] = await Promise.all([
     supabase.from('members').select('*').eq('workspace_id', workspaceId).order('created_at'),
     supabase.from('projects').select('*').eq('workspace_id', workspaceId).order('created_at'),
     supabase.from('tasks').select('*').eq('workspace_id', workspaceId).order('code'),
+    supabase.from('bots').select('id, name, role_title, greeting, look, desk_x, desk_y').eq('workspace_id', workspaceId).order('created_at'),
   ]);
   const failed = members.error ?? projects.error ?? tasks.error;
   if (failed) {
@@ -75,5 +76,7 @@ export async function loadOffice(account: Account): Promise<OfficeRows | null> {
     members: members.data as MemberRow[],
     projects: projects.data as ProjectRow[],
     tasks: tasks.data as TaskRow[],
+    // Missing until the bots migration is run: the office just has no bots.
+    bots: (bots.error ? [] : bots.data) as BotRow[],
   };
 }

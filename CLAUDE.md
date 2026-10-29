@@ -149,6 +149,7 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql`, `20261030000000_arcade_race.sql` `20261102000000_arcade_invaders.sql`, `20261103000000_arcade_whack.sql` `20261104000000_arcade_plane_pong.sql` and `20261105000000_arcade_crossing.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
 | `components/TeamManager.tsx` | "Manage team" modal (Team panel > Manage): members with roles, change role / remove, invite links (create, copy, cancel), email invites |
 | `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
+| `components/BotChat.tsx`, `app/api/bots/[id]/chat/route.ts`, `lib/bots.ts` | Claude bot chat: the panel (history from `bot_messages`, streams replies), the server route (auth, daily cap, Anthropic SDK streaming with `claude-opus-5-5`, saves both sides), shared limits and allowed models. Needs `ANTHROPIC_API_KEY` in `.env.local` (server only). Bots are `Coworker`s with `bot: true`, placed at `BOT_SLOTS`; `isBot(id)` swaps Tasks for Chat |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
 | `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, first-visit start screen, room sign, sprite portrait |
@@ -218,6 +219,8 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
     Room Pong (vs Omar, 3 lives, Omar speeds up every 3 points, rallies add points).
 17. Office Crossing: hop a coffee across 9 aisles (chairs, mail carts, robot vacuums,
     printer carts) to the team desk; safe rug in the middle; faster after each delivery.
+18. Claude bots, milestone 1: Ada the starter bot, private streaming chats, daily cap
+    (migration `20261106000000_bots.sql`). Esc now closes a modal even from a text box.
 
 Everything else still resets on reload: tasks, water, fridge stock.
 
@@ -240,8 +243,8 @@ Alex and Lena in row 11. Rows 13–14 are clear; the arcade is 2 tiles below the
 4. Monday.com integration: OAuth connect flow in Next.js route handlers, tokens in
    `integrations` (server-only, secret key), sync boards → projects, items → tasks,
    people → members, map Monday status columns to the 4 statuses, webhooks for updates.
-5. Claude bots in the office (idea, not started): see `docs/PLAN-claude-bots.md`.
-   Start with AI coworkers on the Claude API; answer its open questions first.
+5. Claude bots in the office: milestone 1 (chat) is built, see `docs/PLAN-claude-bots.md`
+   for the build log and milestones 2 (board tools) and 3 (admin-managed bots).
 
 ## Other ideas
 

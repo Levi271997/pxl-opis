@@ -31,6 +31,7 @@ export interface Coworker extends Person {
   look: Look;
   greeting: string[];
   blocker: string;
+  bot?: boolean; // a Claude bot (chat opens instead of the usual dialog)
 }
 
 export interface Project {
@@ -84,6 +85,9 @@ export const DESK_SLOTS = [
   { x: 3, y: 11 }, { x: 9, y: 11 }, { x: 24, y: 11 }, { x: 30, y: 11 },
   { x: 30, y: 2 },
 ];
+
+// Where Claude bots sit: Omar's old office, now the AI corner.
+export const BOT_SLOTS = [{ x: 32, y: 2 }, { x: 29, y: 4 }, { x: 34, y: 2 }, { x: 32, y: 4 }];
 
 // A teammate who hasn't picked an avatar yet gets one of these (stable per person).
 export const STARTER_LOOKS: Look[] = [
