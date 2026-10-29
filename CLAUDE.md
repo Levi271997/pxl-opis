@@ -240,6 +240,8 @@ Alex and Lena in row 11. Rows 13–14 are clear; the arcade is 2 tiles below the
 4. Monday.com integration: OAuth connect flow in Next.js route handlers, tokens in
    `integrations` (server-only, secret key), sync boards → projects, items → tasks,
    people → members, map Monday status columns to the 4 statuses, webhooks for updates.
+5. Claude bots in the office (idea, not started): see `docs/PLAN-claude-bots.md`.
+   Start with AI coworkers on the Claude API; answer its open questions first.
 
 ## Other ideas
 
