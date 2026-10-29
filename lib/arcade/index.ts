@@ -1,5 +1,6 @@
 import { createBlocks } from './blocks';
 import { createBreakout } from './breakout';
+import { createCrossing } from './crossing';
 import { createInvaders } from './invaders';
 import { createPlane } from './plane';
 import { createPong } from './pong';
@@ -48,6 +49,11 @@ export const GAMES: GameDef[] = [
     id: 'pong', title: 'Break Room Pong', color: '#2f7d5b', create: createPong,
     blurb: 'Table tennis against Omar. He gets quicker every 3 points. Long rallies score more.',
     controls: 'Up / down to move, or click where to go',
+  },
+  {
+    id: 'crossing', title: 'Office Crossing', color: '#c99a5c', create: createCrossing,
+    blurb: 'Carry a coffee to the team desk across aisles of rolling chairs, mail carts and robot vacuums.',
+    controls: 'Arrows to hop, or click beside your character',
   },
 ];
 

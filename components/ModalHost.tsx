@@ -21,7 +21,7 @@ export default function ModalHost({ account }: { account: Account | null }) {
   useEffect(() => {
     if (!modal) return;
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest('input, select, textarea')) return;
+      if ((e.target as HTMLElement | null)?.closest?.('input, select, textarea')) return;
       const k = e.key.toLowerCase();
       if (k === 'escape' || (k === 'b' && modal.kind === 'board') || (k === 'u' && modal.kind === 'status')) closeModal();
     };
