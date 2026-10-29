@@ -17,9 +17,10 @@ export interface Game {
   info?: string; // extra line under the score, e.g. "Lives 2"
   update(dt: number, input: Input): void;
   draw(g: CanvasRenderingContext2D): void;
+  click?(x: number, y: number): void; // a click or tap on the screen, in game pixels
 }
 
-export type GameId = 'snake' | 'breakout' | 'blocks' | 'race' | 'invaders';
+export type GameId = 'snake' | 'breakout' | 'blocks' | 'race' | 'invaders' | 'whack';
 
 export interface GameDef {
   id: GameId;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GAMES, gameById } from '@/lib/arcade';
-import { SCREEN_H, SCREEN_W, type Button, type GameDef, type GameId, type Input } from '@/lib/arcade/types';
+import { SCREEN_H, SCREEN_W, type Button, type Game, type GameDef, type GameId, type Input } from '@/lib/arcade/types';
 import { useOffice } from '@/lib/store';
 import { postScore, topScores, type Score } from '@/lib/supabase/arcade';
 import type { CSSVars } from './TaskCard';
@@ -37,6 +37,7 @@ type Phase = 'ready' | 'playing' | 'paused' | 'over';
 function Screen({ def, onExit }: { def: GameDef; onExit: () => void }) {
   const workspace = useOffice(s => s.workspace);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const current = useRef<Game | null>(null); // the running game, for clicks
   const [round, setRound] = useState(0); // bumps to start a new game
   const [phase, setPhase] = useState<Phase>('ready');
   const [score, setScore] = useState(0);
@@ -62,6 +63,7 @@ function Screen({ def, onExit }: { def: GameDef; onExit: () => void }) {
   useEffect(() => {
     const g = canvas.current!.getContext('2d')!;
     const game = def.create();
+    current.current = game;
     const input: Input = { held: { left: false, right: false, up: false, down: false, action: false }, pressed: new Set() };
     let last = performance.now();
     let raf = 0;
@@ -135,7 +137,15 @@ function Screen({ def, onExit }: { def: GameDef; onExit: () => void }) {
       </div>
 
       <div className="arcade-screen">
-        <canvas ref={canvas} width={SCREEN_W} height={SCREEN_H} />
+        <canvas
+          ref={canvas} width={SCREEN_W} height={SCREEN_H}
+          onPointerDown={e => {
+            const game = current.current;
+            if (phase !== 'playing' || !game?.click || game.over) return;
+            const r = e.currentTarget.getBoundingClientRect();
+            game.click(((e.clientX - r.left) / r.width) * SCREEN_W, ((e.clientY - r.top) / r.height) * SCREEN_H);
+          }}
+        />
         {phase !== 'playing' && (
           <div className="arcade-overlay">
             {phase === 'ready' && <><b>{def.title}</b><span>{def.controls}</span><button className="pixel-btn small" onClick={() => setPhase('playing')}>Start (Space)</button></>}

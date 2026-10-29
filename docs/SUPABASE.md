@@ -36,8 +36,8 @@ Then do the same, in order, with the other files in `supabase/migrations/`:
 `20261030000000_arcade_race.sql` (lets the race game post scores), and
 `20261031000000_compact_office.sql` (moves the demo coworkers to their desks in the
 smaller office map), `20261101000000_teams.sql` (real teams: roles, invites, and
-removes the demo team), and `20261102000000_arcade_invaders.sql` (lets Inbox Invaders
-post scores). The games work without the arcade ones, but scores aren't shared.
+removes the demo team), `20261102000000_arcade_invaders.sql` (lets Inbox Invaders
+post scores), and `20261103000000_arcade_whack.sql` (lets Whack-a-Bug post scores). The games work without the arcade ones, but scores aren't shared.
 
 (If you later install the Supabase CLI, `supabase link` and `supabase db push`
 apply the same file.)

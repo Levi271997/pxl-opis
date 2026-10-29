@@ -3,6 +3,7 @@ import { createBreakout } from './breakout';
 import { createInvaders } from './invaders';
 import { createRace } from './race';
 import { createSnake } from './snake';
+import { createWhack } from './whack';
 import type { GameDef, GameId } from './types';
 
 export const GAMES: GameDef[] = [
@@ -30,6 +31,11 @@ export const GAMES: GameDef[] = [
     id: 'invaders', title: 'Inbox Invaders', color: '#d4508a', create: createInvaders,
     blurb: 'Emails march toward your desk. Spam is worth more, urgent mail takes two hits. Reach inbox zero!',
     controls: 'Left / right to move · Space to fire · Hide behind the boxes',
+  },
+  {
+    id: 'whack', title: 'Whack-a-Bug', color: '#8e6bd8', create: createWhack,
+    blurb: 'Squash bugs before they ship. Chain hits for a combo, and don\'t smash the features!',
+    controls: 'Click a laptop, or arrows + Space to whack',
   },
 ];
 
