@@ -6,7 +6,7 @@ import {
   COWORKERS, DEFAULT_LOOK, FOODS, INITIAL_TASKS, PROJECTS,
   type Coworker, type FoodId, type Look, type Person, type Project, type Task,
 } from './data';
-import { insertTask, saveTask, type OfficeData, type Workspace } from './supabase/office';
+import { insertTask, pushTask, saveTask, type OfficeData, type Workspace } from './supabase/office';
 import { nextTaskId } from './tasks';
 
 export type Mode = 'start' | 'play' | 'dialog' | 'modal';
@@ -46,6 +46,7 @@ interface OfficeState {
   bag: FoodCounts; // what the player has taken
 
   load: (office: OfficeData) => void;
+  loadBoard: (board: Pick<OfficeData, 'projects' | 'tasks'>) => void;
   start: (name: string, look: Look) => void;
   setPlayer: (name: string, look: Look) => void;
   drinkWater: () => number;
@@ -81,6 +82,7 @@ export const useOffice = create<OfficeState>()((set, get) => ({
   bag: foodCounts(() => 0),
 
   load: ({ workspace, coworkers, projects, tasks }) => set({ workspace, coworkers, projects, tasks }),
+  loadBoard: ({ projects, tasks }) => set({ projects, tasks }),
   start: (name, look) => set({ started: true, player: { name, look } }),
   setPlayer: (name, look) => set({ player: { name, look } }),
   drinkWater: () => {
@@ -114,7 +116,12 @@ export const useOffice = create<OfficeState>()((set, get) => ({
     if (!before) return;
     set({ tasks: tasks.map(t => (t.id === id ? { ...t, ...patch } : t)) });
     if (!workspace) return;
-    saveTask(workspace, id, patch).catch(err => {
+    saveTask(workspace, id, patch).then(() => {
+      const { projects } = get();
+      if (projects[before.project]?.source === 'monday' || projects[patch.project ?? before.project]?.source === 'monday') {
+        mirror(workspace, id, Object.keys(patch));
+      }
+    }, err => {
       console.error('Could not save the task:', err.message);
       set(s => ({ tasks: s.tasks.map(t => (t.id === id ? before : t)) }));
     });
@@ -125,12 +132,23 @@ export const useOffice = create<OfficeState>()((set, get) => ({
     const created: Task = { ...task, id: workspace ? crypto.randomUUID() : code, code };
     set({ tasks: [...tasks, created] });
     if (!workspace) return;
-    insertTask(workspace, created).catch(err => {
+    insertTask(workspace, created).then(() => {
+      if (get().projects[created.project]?.source === 'monday') mirror(workspace, created.id, Object.keys(created));
+    }, err => {
       console.error('Could not save the new task:', err.message);
       set(s => ({ tasks: s.tasks.filter(t => t.id !== created.id) }));
     });
   },
 }));
+
+// Changes on a Monday.com board are sent there too. The office copy is already
+// saved, so a failure is only reported, not undone.
+function mirror(workspace: Workspace, id: string, fields: string[]) {
+  pushTask(workspace, id, fields).catch(err => {
+    console.error('Could not update Monday.com:', err.message);
+    useOffice.getState().openDialog({ pages: [`Saved in the office, but not in Monday.com: ${err.message}`] });
+  });
+}
 
 export function getMode(s: Pick<OfficeState, 'started' | 'dialog' | 'modal'>): Mode {
   if (!s.started) return 'start';

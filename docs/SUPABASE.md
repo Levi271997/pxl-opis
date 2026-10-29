@@ -40,8 +40,9 @@ removes the demo team), `20261102000000_arcade_invaders.sql` (lets Inbox Invader
 post scores), `20261103000000_arcade_whack.sql` (lets Whack-a-Bug post scores),
 `20261104000000_arcade_plane_pong.sql` (Paper Plane and Break Room Pong),
 `20261105000000_arcade_crossing.sql` (Office Crossing), and
-`20261106000000_bots.sql` (Claude bots; also add `ANTHROPIC_API_KEY` to `.env.local`), and
-`20261107000000_connectors.sql` (Settings → Connectors; see `docs/CONNECTORS.md`). The games work without the arcade ones, but scores aren't shared.
+`20261106000000_bots.sql` (Claude bots; also add `ANTHROPIC_API_KEY` to `.env.local`),
+`20261107000000_connectors.sql` (Settings → Connectors; see `docs/CONNECTORS.md`), and
+`20261108000000_monday_sync.sql` (Monday.com board sync). The games work without the arcade ones, but scores aren't shared.
 
 (If you later install the Supabase CLI, `supabase link` and `supabase db push`
 apply the same file.)

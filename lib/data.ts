@@ -37,6 +37,7 @@ export interface Coworker extends Person {
 export interface Project {
   name: string;
   color: string;
+  source?: 'monday'; // synced from a Monday.com board: changes are sent back
 }
 
 export interface Task {

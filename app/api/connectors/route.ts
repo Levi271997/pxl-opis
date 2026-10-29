@@ -14,15 +14,18 @@ export async function GET(request: NextRequest) {
 
   const admin = createAdminClient();
   const ready = admin !== null && encryptionReady();
-  let rows: { provider: string; account: { name?: string; detail?: string } | null; connected_by: string | null; created_at: string }[] = [];
+  let rows: {
+    provider: string; account: { name?: string; detail?: string } | null; connected_by: string | null; created_at: string;
+    scope: string | null; settings: { boards?: { id: string; name: string }[] } | null; synced_at: string | null;
+  }[] = [];
   let names = new Map<string, string>();
 
   if (admin) {
     const { data, error } = await admin
       .from('integrations')
-      .select('provider, account, connected_by, created_at')
+      .select('provider, account, connected_by, created_at, scope, settings, synced_at')
       .eq('workspace_id', access.workspaceId);
-    if (error) return NextResponse.json({ error: 'Could not read connectors. Has the connectors migration been run?' }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'Could not read connectors. Have the connectors and Monday sync migrations been run?' }, { status: 500 });
     rows = data ?? [];
     const ids = rows.map(r => r.connected_by).filter((id): id is string => Boolean(id));
     if (ids.length) {
@@ -48,6 +51,12 @@ export async function GET(request: NextRequest) {
           detail: row.account?.detail ?? null,
           connectedBy: (row.connected_by && names.get(row.connected_by)) || 'someone',
           connectedAt: row.created_at,
+          // Board sync (Monday.com only so far)
+          sync: c.id === 'monday' ? {
+            boards: row.settings?.boards ?? [],
+            syncedAt: row.synced_at,
+            canWrite: !row.scope || row.scope.includes('boards:write'),
+          } : null,
         },
       };
     }),

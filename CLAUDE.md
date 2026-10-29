@@ -151,7 +151,7 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
 | `components/BotChat.tsx`, `app/api/bots/[id]/chat/route.ts`, `lib/bots.ts` | Claude bot chat: the panel (history from `bot_messages`, streams replies), the server route (auth, daily cap, Anthropic SDK streaming with `claude-opus-5-5`, saves both sides), shared limits and allowed models. Needs `ANTHROPIC_API_KEY` in `.env.local` (server only). Bots are `Coworker`s with `bot: true`, placed at `BOT_SLOTS`; `isBot(id)` swaps Tasks for Chat |
 | `components/SettingsPanel.tsx`, `components/ConnectorsPanel.tsx` | HUD **Settings** modal (tabs: Character, Team, Connectors); the Connectors tab lists Monday.com / ClickUp / GitHub with Connect / Disconnect (owner/admin) and "Coming soon" tools |
-| `lib/connectors/*`, `app/api/connectors/**`, `lib/supabase/admin.ts` | Connectors: `catalog.ts` (browser-safe list), `oauth.ts` (per-provider authorize URL, code exchange, account lookup; server only), `crypto.ts` (AES-256-GCM with `CONNECTORS_SECRET`), `state.ts` (sign-in state cookie), `access.ts` (member/admin check via `is_member`/`is_admin` RPCs with the caller's session). Routes: list, `[provider]/connect`, `[provider]/callback`, `[provider]/disconnect`. Tokens live encrypted in `integrations` (no RLS policies) and are only touched with the secret-key client. Setup: `docs/CONNECTORS.md` |
+| `lib/connectors/*`, `app/api/connectors/**`, `lib/supabase/admin.ts` | Connectors: `catalog.ts` (browser-safe list), `oauth.ts` (per-provider authorize URL, code exchange, account lookup; server only), `crypto.ts` (AES-256-GCM with `CONNECTORS_SECRET`), `state.ts` (sign-in state cookie), `access.ts` (member/admin check via `is_member`/`is_admin` RPCs with the caller's session). `monday.ts` (GraphQL client, column/label mapping, read board, update/create item), `sync.ts` (`syncMonday` boards → projects, items → tasks, people by email; `pushTask` office → Monday). Routes: list, `[provider]/connect`, `[provider]/callback`, `[provider]/disconnect`, `[provider]/boards` (GET list / POST pick + sync, admin), `[provider]/sync` (any member, skipped if synced < 2 min ago unless `force`), `[provider]/push` (mirror one task change). The store calls `pushTask` after saving a task in a project with `source: 'monday'`; `fetchBoard` reloads projects and tasks after a sync. Tokens live encrypted in `integrations` (no RLS policies) and are only touched with the secret-key client. Setup: `docs/CONNECTORS.md` |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
 | `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, first-visit start screen, room sign, sprite portrait |
@@ -224,8 +224,11 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
 18. Claude bots, milestone 1: Ada the starter bot, private streaming chats, daily cap
     (migration `20261106000000_bots.sql`). Esc now closes a modal even from a text box.
 19. Settings button in the HUD (Character / Team / Connectors tabs) and connectors for
-    Monday.com, ClickUp and GitHub: connect / disconnect only, sync comes next
+    Monday.com, ClickUp and GitHub: connect / disconnect
     (migration `20261107000000_connectors.sql`, setup in `docs/CONNECTORS.md`).
+20. Two-way Monday.com board sync: admins pick boards (Choose boards), items become
+    tasks, office edits go back to Monday.com, background sync on office load
+    (migration `20261108000000_monday_sync.sql`, rules in `docs/CONNECTORS.md` section 4).
 
 Everything else still resets on reload: tasks, water, fridge stock.
 
@@ -245,14 +248,14 @@ Alex and Lena in row 11. Rows 13–14 are clear; the arcade is 2 tiles below the
 2. Done: the office loads from Supabase and task changes are saved.
 3. Realtime: subscribe to `tasks` changes; use Realtime **Presence** for real
    online status and to show other signed-in players walking around.
-4. Monday.com integration: OAuth connect flow in Next.js route handlers, tokens in
-   `integrations` (server-only, secret key), sync boards → projects, items → tasks,
-   people → members, map Monday status columns to the 4 statuses, webhooks for updates.
+4. Done: Monday.com integration (OAuth connect, two-way board sync, people matched by
+   email). Still to do: webhooks for instant updates, and creating office teammates
+   for Monday.com people who haven't signed in.
 5. Claude bots in the office: milestone 1 (chat) is built, see `docs/PLAN-claude-bots.md`
    for the build log and milestones 2 (board tools) and 3 (admin-managed bots).
 6. Connectors: Settings → Connectors connects Monday.com, ClickUp and GitHub (OAuth,
-   encrypted tokens). Next: sync their tasks onto the board, and give bots tools
-   from the connected services.
+   encrypted tokens). Monday.com boards sync both ways. Next: Monday.com webhooks for
+   instant updates (needs a public URL), ClickUp and GitHub sync, and bot tools.
 7. Going live: see `docs/DEPLOY.md`. App keys go in the host's environment variables
    (users never enter keys); add production redirect URLs; decide who pays for Claude.
 

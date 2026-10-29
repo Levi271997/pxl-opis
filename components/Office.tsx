@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { savedPlayer } from '@/lib/player';
 import { useOffice } from '@/lib/store';
 import type { Account } from '@/lib/supabase/account';
-import { toOffice, type OfficeRows } from '@/lib/supabase/office';
+import { fetchBoard, syncConnectors, toOffice, type OfficeRows } from '@/lib/supabase/office';
 import DialogBox from './DialogBox';
 import GameCanvas from './GameCanvas';
 import Hud from './Hud';
@@ -42,6 +42,16 @@ export default function Office({ account, office, notice }: {
     }
     setChecked(true);
   }, [account, notice]);
+
+  // Pull connected boards (Monday.com) in the background; the server skips it
+  // if it ran in the last couple of minutes.
+  useEffect(() => {
+    const ws = useOffice.getState().workspace;
+    if (!ws) return;
+    syncConnectors(ws)
+      .then(async r => { if (r.synced) useOffice.getState().loadBoard(await fetchBoard(ws)); })
+      .catch(err => console.error('Board sync failed:', err.message));
+  }, []);
 
   return (
     <>

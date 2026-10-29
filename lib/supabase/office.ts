@@ -36,6 +36,7 @@ export interface ProjectRow {
   id: string;
   name: string;
   color: string;
+  source?: 'local' | 'monday';
 }
 
 export interface TaskRow {
@@ -146,18 +147,57 @@ export function toOffice(rows: OfficeRows): OfficeData | null {
   return {
     workspace: { id: rows.workspaceId, meId: me.id, role: me.role },
     coworkers: [...coworkers, ...toBots(rows.bots)],
-    projects: Object.fromEntries(rows.projects.map(p => [p.id, { name: p.name, color: p.color }])),
-    tasks: rows.tasks.map(t => ({
-      id: t.id,
-      code: t.code ?? undefined,
-      title: t.title,
-      project: t.project_id ?? '',
-      assignee: t.assignee_id === me.id ? 'me' : t.assignee_id ?? '',
-      status: t.status,
-      priority: t.priority,
-      dueIn: daysUntil(t.due_date),
-    })),
+    projects: toProjects(rows.projects),
+    tasks: toTasks(rows.tasks, me.id),
   };
+}
+
+const toProjects = (rows: ProjectRow[]): Record<string, Project> =>
+  Object.fromEntries(rows.map(p => [p.id, { name: p.name, color: p.color, ...(p.source === 'monday' ? { source: 'monday' as const } : {}) }]));
+
+const toTasks = (rows: TaskRow[], meId: string): Task[] => rows.map(t => ({
+  id: t.id,
+  code: t.code ?? undefined,
+  title: t.title,
+  project: t.project_id ?? '',
+  assignee: t.assignee_id === meId ? 'me' : t.assignee_id ?? '',
+  status: t.status,
+  priority: t.priority,
+  dueIn: daysUntil(t.due_date),
+}));
+
+// Projects and tasks again, after a sync changed them.
+export async function fetchBoard(ws: Workspace) {
+  const supabase = createClient();
+  const [projects, tasks] = await Promise.all([
+    supabase.from('projects').select('id, name, color, source').eq('workspace_id', ws.id).order('created_at'),
+    supabase.from('tasks').select('id, project_id, assignee_id, code, title, status, priority, due_date').eq('workspace_id', ws.id).order('code'),
+  ]);
+  if (projects.error || tasks.error) throw new Error((projects.error ?? tasks.error)!.message);
+  return { projects: toProjects(projects.data as ProjectRow[]), tasks: toTasks(tasks.data as TaskRow[], ws.meId) };
+}
+
+// Asks the server to pull Monday.com again. Returns true if anything was synced.
+export async function syncConnectors(ws: Workspace, force = false) {
+  const res = await fetch('/api/connectors/monday/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workspaceId: ws.id, force }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error ?? 'Sync failed');
+  return body as { synced: boolean; boards?: number; tasks?: number };
+}
+
+// Mirrors an office change to Monday.com (the office already saved it).
+export async function pushTask(ws: Workspace, taskId: string, fields: string[]) {
+  const res = await fetch('/api/connectors/monday/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workspaceId: ws.id, taskId, fields }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error ?? "Monday.com didn't accept the change.");
 }
 
 // Only the fields that were changed, as database columns.

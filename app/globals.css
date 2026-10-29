@@ -752,3 +752,14 @@ kbd {
 a.pixel-btn { text-decoration: none; display: inline-block; }
 .coming-soon { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .soon-chip { font-size: 17px; padding: 3px 8px; border: 2px dashed var(--c); color: var(--c); opacity: .75; }
+
+/* Monday.com board sync, inside its connector card */
+.board-sync { display: grid; gap: 6px; margin-top: 4px; }
+.board-sync .bot-note { font-size: 16px; }
+.board-sync-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.board-pick { display: grid; gap: 6px; }
+.board-pick-list { display: grid; gap: 2px; max-height: 200px; overflow-y: auto; border: 2px solid var(--ink); background: #fff; padding: 4px; }
+.board-pick-row { display: flex; align-items: center; gap: 8px; font-size: 17px; cursor: pointer; padding: 2px 4px; }
+.board-pick-row:hover { background: #f1f0f7; }
+.board-pick-row small { margin-left: auto; color: #6b6585; font-size: 15px; white-space: nowrap; }
+.board-pick-row input { width: 16px; height: 16px; accent-color: var(--ink); flex: none; }

@@ -32,7 +32,7 @@ const PROVIDERS: Record<ConnectorId, Provider> = {
     env: { id: 'MONDAY_CLIENT_ID', secret: 'MONDAY_CLIENT_SECRET' },
     authorizeUrl: (clientId, redirectUri, state) => query('https://auth.monday.com/oauth2/authorize', {
       client_id: clientId, redirect_uri: redirectUri, state,
-      scope: 'me:read boards:read users:read workspaces:read',
+      scope: 'me:read boards:read boards:write users:read workspaces:read',
     }),
     async exchange(code, clientId, secret, redirectUri) {
       const body = await json(await fetch('https://auth.monday.com/oauth2/token', {
