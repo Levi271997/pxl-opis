@@ -20,7 +20,7 @@ export interface Game {
   click?(x: number, y: number): void; // a click or tap on the screen, in game pixels
 }
 
-export type GameId = 'snake' | 'breakout' | 'blocks' | 'race' | 'invaders' | 'whack';
+export type GameId = 'snake' | 'breakout' | 'blocks' | 'race' | 'invaders' | 'whack' | 'plane' | 'pong';
 
 export interface GameDef {
   id: GameId;

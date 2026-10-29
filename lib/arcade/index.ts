@@ -1,6 +1,8 @@
 import { createBlocks } from './blocks';
 import { createBreakout } from './breakout';
 import { createInvaders } from './invaders';
+import { createPlane } from './plane';
+import { createPong } from './pong';
 import { createRace } from './race';
 import { createSnake } from './snake';
 import { createWhack } from './whack';
@@ -36,6 +38,16 @@ export const GAMES: GameDef[] = [
     id: 'whack', title: 'Whack-a-Bug', color: '#8e6bd8', create: createWhack,
     blurb: 'Squash bugs before they ship. Chain hits for a combo, and don\'t smash the features!',
     controls: 'Click a laptop, or arrows + Space to whack',
+  },
+  {
+    id: 'plane', title: 'Paper Plane', color: '#4fb3ff', create: createPlane,
+    blurb: 'Keep your paper plane in the air through the gaps between filing cabinets.',
+    controls: 'Space, Up or click to flap',
+  },
+  {
+    id: 'pong', title: 'Break Room Pong', color: '#2f7d5b', create: createPong,
+    blurb: 'Table tennis against Omar. He gets quicker every 3 points. Long rallies score more.',
+    controls: 'Up / down to move, or click where to go',
   },
 ];
 

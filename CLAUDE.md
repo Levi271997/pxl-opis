@@ -145,8 +145,8 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `components/StatusBoard.tsx` | Team status board: everyone's presence, current task, counts |
 | `components/FridgePanel.tsx` / `FoodIcon.tsx` | Fridge contents, Take/Put back, lunch bag |
 | `components/ArcadePanel.tsx` | Arcade menu with best scores and team top 5, and the game screen (canvas 160×144 scaled up, keyboard input plus optional `click(x, y)` in game pixels, pause, game over, posts the score) |
-| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop), `race.ts` (Turbo Lane), `invaders.ts` (Inbox Invaders), `whack.ts` (Whack-a-Bug). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
-| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql`, `20261030000000_arcade_race.sql` `20261102000000_arcade_invaders.sql` and `20261103000000_arcade_whack.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
+| `lib/arcade/*` | The mini-games, original code: `snake.ts`, `breakout.ts`, `blocks.ts` (Block Drop), `race.ts` (Turbo Lane), `invaders.ts` (Inbox Invaders), `whack.ts` (Whack-a-Bug), `plane.ts` (Paper Plane), `pong.ts` (Break Room Pong). Each returns a `Game` with `update(dt, input)` / `draw(g)` / `score` / `over` (`types.ts`); listed in `index.ts` |
+| `lib/supabase/arcade.ts` | `topScores` (best per person, top 5) and `postScore` for the `arcade_scores` table (migrations `20261029000000_arcade_scores.sql`, `20261030000000_arcade_race.sql` `20261102000000_arcade_invaders.sql`, `20261103000000_arcade_whack.sql` and `20261104000000_arcade_plane_pong.sql`, run separately; a new game id needs a migration that widens `arcade_scores_game_check`) |
 | `components/TeamManager.tsx` | "Manage team" modal (Team panel > Manage): members with roles, change role / remove, invite links (create, copy, cancel), email invites |
 | `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
@@ -214,6 +214,8 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
 14. Start screen and tips only on the first visit; Character settings in the HUD.
 15. Whack-a-Bug: 3×3 laptops, squash bugs (fast 20, critical 50), don't hit features,
     combo up to ×5, 60-second round or 10 shipped bugs.
+16. Paper Plane (flap through gaps between filing cabinets, 1 point per gap) and Break
+    Room Pong (vs Omar, 3 lives, Omar speeds up every 3 points, rallies add points).
 
 Everything else still resets on reload: tasks, water, fridge stock.
 
