@@ -8,6 +8,7 @@ import ArcadePanel from './ArcadePanel';
 import Board from './Board';
 import BotChat from './BotChat';
 import CharacterSettings from './CharacterSettings';
+import SettingsPanel from './SettingsPanel';
 import BookshelfPanel from './BookshelfPanel';
 import FridgePanel from './FridgePanel';
 import PersonPanel from './PersonPanel';
@@ -40,6 +41,7 @@ export default function ModalHost({ account }: { account: Account | null }) {
     : modal.kind === 'arcade' ? 'Arcade'
     : modal.kind === 'manage-team' ? 'Manage team'
     : modal.kind === 'character' ? 'Character'
+    : modal.kind === 'settings' ? 'Settings'
     : modal.kind === 'bot' ? `Chat with ${getPerson(modal.id, playerName).name}`
     : modal.id === 'me' ? 'My tasks' : `${firstName(getPerson(modal.id, playerName).name)}'s desk`;
 
@@ -63,6 +65,7 @@ export default function ModalHost({ account }: { account: Account | null }) {
           {modal.kind === 'manage-team' && <TeamManager />}
           {modal.kind === 'character' && <CharacterSettings account={account} />}
           {modal.kind === 'bot' && <BotChat id={modal.id} />}
+          {modal.kind === 'settings' && <SettingsPanel key={modal.tab ?? 'character'} account={account} tab={modal.tab} />}
           {modal.kind === 'person' && <PersonPanel id={modal.id} />}
         </div>
       </div>

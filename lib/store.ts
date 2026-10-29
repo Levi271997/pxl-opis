@@ -20,7 +20,10 @@ export interface DialogRequest {
 }
 
 export type ModalRequest =
-  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'manage-team' } | { kind: 'character' } | { kind: 'person'; id: string } | { kind: 'bot'; id: string };
+  | { kind: 'board' } | { kind: 'status' } | { kind: 'fridge' } | { kind: 'bookshelf' } | { kind: 'arcade' } | { kind: 'manage-team' } | { kind: 'character' } | { kind: 'person'; id: string } | { kind: 'bot'; id: string }
+  | { kind: 'settings'; tab?: SettingsTab };
+
+export type SettingsTab = 'character' | 'team' | 'connectors';
 
 type FoodCounts = Record<FoodId, number>;
 const foodCounts = (count: (id: FoodId) => number) =>

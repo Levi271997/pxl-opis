@@ -150,6 +150,8 @@ Setup steps for the owner are in `docs/SUPABASE.md`. Keys go in `.env.local`
 | `components/TeamManager.tsx` | "Manage team" modal (Team panel > Manage): members with roles, change role / remove, invite links (create, copy, cancel), email invites |
 | `app/join/[token]/route.ts`, `app/api/invites/email/route.ts`, `lib/supabase/invite.ts` | Invite link landing, email invite sender, the invite cookie name |
 | `components/BotChat.tsx`, `app/api/bots/[id]/chat/route.ts`, `lib/bots.ts` | Claude bot chat: the panel (history from `bot_messages`, streams replies), the server route (auth, daily cap, Anthropic SDK streaming with `claude-opus-5-5`, saves both sides), shared limits and allowed models. Needs `ANTHROPIC_API_KEY` in `.env.local` (server only). Bots are `Coworker`s with `bot: true`, placed at `BOT_SLOTS`; `isBot(id)` swaps Tasks for Chat |
+| `components/SettingsPanel.tsx`, `components/ConnectorsPanel.tsx` | HUD **Settings** modal (tabs: Character, Team, Connectors); the Connectors tab lists Monday.com / ClickUp / GitHub with Connect / Disconnect (owner/admin) and "Coming soon" tools |
+| `lib/connectors/*`, `app/api/connectors/**`, `lib/supabase/admin.ts` | Connectors: `catalog.ts` (browser-safe list), `oauth.ts` (per-provider authorize URL, code exchange, account lookup; server only), `crypto.ts` (AES-256-GCM with `CONNECTORS_SECRET`), `state.ts` (sign-in state cookie), `access.ts` (member/admin check via `is_member`/`is_admin` RPCs with the caller's session). Routes: list, `[provider]/connect`, `[provider]/callback`, `[provider]/disconnect`. Tokens live encrypted in `integrations` (no RLS policies) and are only touched with the secret-key client. Setup: `docs/CONNECTORS.md` |
 | `components/BookshelfPanel.tsx` | Bookshelf list and paged reader (arrow keys turn pages; last page saved in localStorage) |
 | `lib/books.ts` / `app/api/books/[id]/route.ts` | The 5 public-domain books, and the route that fetches one from Project Gutenberg (cached a month, license header/footer stripped, only listed ids) |
 | `components/Hud.tsx`, `TeamPanel.tsx`, `StartScreen.tsx`, `ZoneBanner.tsx`, `Portrait.tsx` | HUD (name, room, water counter, buttons), team sidebar, first-visit start screen, room sign, sprite portrait |
@@ -221,6 +223,9 @@ A quick node one-liner that evals `MAP_ROWS` and checks row lengths is handy.
     printer carts) to the team desk; safe rug in the middle; faster after each delivery.
 18. Claude bots, milestone 1: Ada the starter bot, private streaming chats, daily cap
     (migration `20261106000000_bots.sql`). Esc now closes a modal even from a text box.
+19. Settings button in the HUD (Character / Team / Connectors tabs) and connectors for
+    Monday.com, ClickUp and GitHub: connect / disconnect only, sync comes next
+    (migration `20261107000000_connectors.sql`, setup in `docs/CONNECTORS.md`).
 
 Everything else still resets on reload: tasks, water, fridge stock.
 
@@ -245,6 +250,9 @@ Alex and Lena in row 11. Rows 13–14 are clear; the arcade is 2 tiles below the
    people → members, map Monday status columns to the 4 statuses, webhooks for updates.
 5. Claude bots in the office: milestone 1 (chat) is built, see `docs/PLAN-claude-bots.md`
    for the build log and milestones 2 (board tools) and 3 (admin-managed bots).
+6. Connectors: Settings → Connectors connects Monday.com, ClickUp and GitHub (OAuth,
+   encrypted tokens). Next: sync their tasks onto the board, and give bots tools
+   from the connected services.
 
 ## Other ideas
 

@@ -734,3 +734,21 @@ kbd {
 .bot-input { display: flex; gap: 8px; align-items: stretch; }
 .bot-input textarea { flex: 1; font: inherit; font-size: 19px; border: 3px solid var(--ink); padding: 4px 8px; resize: vertical; min-height: 48px; }
 .bot-meta { margin: 0; color: #6b6585; font-size: 16px; }
+
+/* settings + connectors */
+.settings-tabs { margin-bottom: 14px; }
+.connector-list { display: grid; gap: 8px; margin-bottom: 6px; }
+.connector { display: flex; align-items: center; gap: 12px; background: #fff; border: 3px solid var(--ink); border-left: 8px solid var(--c); padding: 8px 10px; }
+.connector.connected { background: #f1fbf4; }
+.connector-logo { width: 32px; height: 32px; flex: none; display: grid; place-items: center; background: var(--c); color: #fff; font-family: var(--pixel); font-size: 13px; }
+.connector-info { flex: 1; min-width: 0; display: grid; gap: 3px; line-height: 1.1; }
+.connector-info strong { font-family: var(--pixel); font-size: 10px; font-weight: normal; }
+.connector-info > span { font-size: 17px; color: #6b6585; }
+.connector-uses { display: flex; gap: 6px; flex-wrap: wrap; }
+.use-chip { font-family: var(--pixel); font-size: 7px; padding: 3px 5px; border: 2px solid var(--ink); background: #fffbf0; color: var(--ink); }
+.connector-status { font-size: 16px; }
+.connector-status.ok { color: #2f9e6e; }
+.pixel-btn.disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+a.pixel-btn { text-decoration: none; display: inline-block; }
+.coming-soon { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.soon-chip { font-size: 17px; padding: 3px 8px; border: 2px dashed var(--c); color: var(--c); opacity: .75; }

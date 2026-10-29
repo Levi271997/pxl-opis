@@ -119,6 +119,11 @@ export default function TeamManager() {
         </p>
       )}
 
+      <p className="tm-reload">
+        Connect Monday.com, ClickUp or GitHub to this office.{' '}
+        <button className="mini-btn" onClick={() => useOffice.getState().openModal({ kind: 'settings', tab: 'connectors' })}>Connectors</button>
+      </p>
+
       <h4 className="section-label">Members ({members.length})</h4>
       <ul className="tm-list">
         {members.map(m => {

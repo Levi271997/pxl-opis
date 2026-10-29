@@ -40,7 +40,7 @@ export default function Hud({ account }: { account: Account | null }) {
       </div>
       <nav className="hud-actions">
         <button className="pixel-btn" onClick={whenPlaying(() => openModal({ kind: 'person', id: 'me' }))}>My tasks</button>
-        <button className="pixel-btn" onClick={whenPlaying(() => openModal({ kind: 'character' }))}>Character</button>
+        <button className="pixel-btn" onClick={whenPlaying(() => openModal({ kind: 'settings' }))}>Settings</button>
         <button className="pixel-btn" onClick={whenPlaying(() => openModal({ kind: 'board' }))}>Board <kbd>B</kbd></button>
         <button className="pixel-btn" onClick={whenPlaying(() => openModal({ kind: 'status' }))}>Status <kbd>U</kbd></button>
         <button className="pixel-btn" onClick={whenPlaying(() => toggleTeam())}>Team <kbd>T</kbd></button>
