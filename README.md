@@ -13,7 +13,9 @@ Production build: `npm run build && npm start`.
 
 Without Supabase keys the app runs in **demo mode** (no sign-in, static data).
 To turn on sign-in (Google, Microsoft, email link) and the database, follow
-[docs/SUPABASE.md](docs/SUPABASE.md).
+[docs/SUPABASE.md](docs/SUPABASE.md). Connecting Monday.com, ClickUp and GitHub is
+in [docs/CONNECTORS.md](docs/CONNECTORS.md), and going live in
+[docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## How it's organised
 

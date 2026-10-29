@@ -253,6 +253,8 @@ Alex and Lena in row 11. Rows 13–14 are clear; the arcade is 2 tiles below the
 6. Connectors: Settings → Connectors connects Monday.com, ClickUp and GitHub (OAuth,
    encrypted tokens). Next: sync their tasks onto the board, and give bots tools
    from the connected services.
+7. Going live: see `docs/DEPLOY.md`. App keys go in the host's environment variables
+   (users never enter keys); add production redirect URLs; decide who pays for Claude.
 
 ## Other ideas
 
