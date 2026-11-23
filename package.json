@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "env:lock": "node scripts/env-crypt.mjs lock",
+    "env:unlock": "node scripts/env-crypt.mjs unlock"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
